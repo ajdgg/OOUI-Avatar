@@ -1,0 +1,99 @@
+{
+	"name": "OOUI-Avatar",
+	"author": [
+		"Gary Guo",
+		"[https://github.com/ajdgg awajie]"
+	],
+	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
+	"descriptionmsg": "avatar_desc",
+	"version": "0.1.0",
+	"license-name": "BSD-2-Clause",
+	"type": "specialpage",
+	"ExtensionMessagesFiles": {
+		"AvatarAlias": "Avatar.alias.php"
+	},
+	"MessagesDirs": {
+		"Avatar": [
+			"i18n"
+		]
+	},
+	"Hooks": {
+		"GetPreferences": "Avatar\\Hooks::onGetPreferences",
+		"BaseTemplateToolbox": "Avatar\\Hooks::onBaseTemplateToolbox",
+		"SidebarBeforeOutput": "Avatar\\Hooks::onSidebarBeforeOutput"
+	},
+	"ExtensionFunctions": [
+		"Avatar\\Hooks::onSetup"
+	],
+	"ResourceModules": {
+		"ext.avatar.upload": {
+			"dependencies": [
+				"oojs-ui-core",
+				"ext.avatar.canvas"
+			],
+			"scripts":[
+				"assets/upload.js"
+			],
+			"styles":[
+				"assets/upload.css"
+			],
+			"messages": [
+				"avatar-invalid",
+				"avatar-toosmall",
+				"uploadavatar-nofile",
+				"uploadavatar-hint"
+			]
+		},
+		"ext.avatar.canvas": {
+            "scripts": ["assets/canvas.js"]
+        }
+	},
+	"AutoloadClasses": {
+		"Avatar\\Hooks": "Hooks.php",
+		"Avatar\\Avatars": "Avatar_body.php",
+		"Avatar\\Thumbnail": "Thumbnail.php",
+		"Avatar\\SpecialUpload": "SpecialUpload.php",
+		"Avatar\\SpecialView": "SpecialView.php",
+		"Avatar\\UploadLogFormatter": "includes/UploadLogFormatter.php"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "",
+		"remoteExtPath": "Avatar"
+	},
+	"SpecialPages": {
+		"UploadAvatar": "Avatar\\SpecialUpload",
+		"ViewAvatar": "Avatar\\SpecialView"
+	},
+	"AvailableRights": [
+		"avatarupload",
+		"avataradmin"
+	],
+	"GroupPermissions": {
+		"user": {
+			"avatarupload": true
+		},
+		"sysop": {
+			"avataradmin": true
+		}
+	},
+	"LogTypes": [
+		"avatar"
+	],
+	"LogActionsHandlers": {
+		"avatar/upload": "Avatar\\UploadLogFormatter",
+		"avatar/delete": "LogFormatter"
+	},
+	"config": {
+		"DefaultAvatar": "http://www.gravatar.com/avatar/00000000000000000000000000000000?d=mm&f=y",
+		"MaxAvatarResolution": 256,
+		"AllowedAvatarRes": [64, 128], 
+		"DefaultAvatarRes": 128,
+		"UseAvatar": true,
+		"VersionAvatar": false,
+		"AvatarServingMethod": "redirect",
+		"AvatarLogInRC": true,
+		"AvatarUploadPath": false,
+		"AvatarUploadDirectory": false
+	},
+	"manifest_version": 1
+}
