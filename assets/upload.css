@@ -59,25 +59,25 @@
 	z-index: 2;
 }
 .up {
-	top: -2px;
+	top: -3px;
 	left: 50%;
 	transform: translateX(-50%);
 	cursor: n-resize;
 }
 .down {
-	bottom: -2px;
+	bottom: -3px;
 	left: 50%;
 	transform: translateX(-50%);
 	cursor: s-resize;
 }
 .left {
-	left: -2px;
+	left: -3px;
 	top: 50%;
 	transform: translateY(-50%);
 	cursor: w-resize;
 }
 .right {
-	right: -2px;
+	right: -3px;
 	top: 50%;
 	transform: translateY(-50%);
 	cursor: e-resize;

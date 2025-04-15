@@ -12,7 +12,6 @@ class CropBox {
 
     init(img) {
         const ratio = window.devicePixelRatio || 1;
-        console.log(img.naturalWidth, img.naturalHeight);
         const maxWidth = 500;
         const scale = Math.min(maxWidth / img.naturalWidth, 1);
         this.newWidth = Math.floor(img.naturalWidth * scale) * ratio;

@@ -8,10 +8,6 @@ const inputAcceptFlieType = '.png, .gif, .jpg, .jpeg, .webp, .svg'
 const currentAvatar = document.createElement('img')
 currentAvatar.className = 'current-avatar';
 currentAvatar.src = mw.config.get('wgScriptPath') + '/extensions/Avatar/avatar.php?user=' + mw.user.id() + '&res=original&nocache&ver=' + Math.floor(Date.now()/1000).toString(16);
-console.log('as:', mw.msg('uploadavatar-nofile'))
-console.log('as:', mw.msg('uploadavatar-hint'))
-console.log('as:', mw.msg('avatar-toosmall'))
-console.log('as:', mw.msg('avatar-invalid'))
 
 let msgBelow = document.createElement('p');
 msgBelow.textContent = mw.msg('uploadavatar-nofile');
@@ -140,7 +136,6 @@ window.onpointermove = (event) => {
   }
 }
 window.onpointerup = () => {
-  console.log(cropdDom);
   if (!cropdDom) return;
   offsetX = translateX;
   offsetY = translateY;
@@ -272,7 +267,6 @@ pickfile.onclick = (event) => {
   picker.accept = inputAcceptFlieType;
   picker.onchange = (event) => {
     var file = event.target.files[0];
-    console.log(file);
     if (!FileType.includes(file.type)) {
       OOerrorMsg.toggle(true);
       OOerrorMsg.setLabel(mw.msg('avatar-invalid'));
