@@ -35,5 +35,8 @@
 	"viewavatar-noavatar": "* 该用户没有头像。",
 	"viewavatar-nouser": "* 该用户不存在。",
 
-	"sidebar-viewavatar": "查看头像"
+	"sidebar-viewavatar": "查看头像",
+
+	"oss-bucket-not-configured": "未配置OSS存储桶。",
+	"oss-Invalid-init-param": "有未配置的初始化参数："
 }

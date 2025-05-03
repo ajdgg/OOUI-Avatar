@@ -51,4 +51,44 @@ class Thumbnail {
 
 		imagedestroy($thumb);
 	}
+
+	public function getThumbnailImageBinaryData($dimension) {
+		if ($dimension > $this->width) {
+			$dimension = $this->width;
+		}
+
+		$thumb = imagecreatetruecolor($dimension, $dimension);
+		imagesavealpha($thumb, true);
+		$transparent = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
+		imagefill($thumb, 0, 0, $transparent);
+		imagecopyresampled($thumb, $this->image, 0, 0, 0, 0, $dimension, $dimension, $this->width, $this->height);
+		ob_start();
+		imagejpeg($thumb);
+		$imageBinaryData = ob_get_contents();
+		ob_end_clean();
+		imagedestroy($thumb);
+
+		return $imageBinaryData;
+	}
+
+	public static function generateThumbnailFromBinary($binaryData, $targetWidth) {
+		$sourceImage = imagecreatefromstring($binaryData);
+		if (!$sourceImage) {
+			throw new \Exception("无法识别图像格式或数据无效");
+		}
+		$originalWidth = imagesx($sourceImage);
+		$originalHeight = imagesy($sourceImage);
+		$ratio = min($targetWidth / $originalWidth, $targetWidth / $originalHeight);
+		$newWidth = (int)($originalWidth * $ratio);
+		$newHeight = (int)($originalHeight * $ratio);
+		$thumbnail = imagecreatetruecolor($newWidth, $newHeight);
+		imagecopyresampled($thumbnail, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+		ob_start();
+		imagepng($thumbnail);
+		$thumbnailBinary = ob_get_clean();
+		imagedestroy($sourceImage);
+		imagedestroy($thumbnail);
+	
+		return $thumbnailBinary;
+	}
 }

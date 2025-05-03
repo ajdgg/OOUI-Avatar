@@ -11,6 +11,7 @@ class SpecialView extends \SpecialPage {
 
 	public function execute($par) {
 		// Shortcut by using $par
+		global $wgAvatarEnableS3;
 		if ($par) {
 			$this->getOutput()->redirect($this->getPageTitle()->getLinkURL(array(
 				'user' => $par,
@@ -41,16 +42,28 @@ class SpecialView extends \SpecialPage {
 			}
 			// Delete avatar if the user exists
 			if ($userExists) {
-				if (Avatars::deleteAvatar($userObj)) {
-					global $wgAvatarLogInRC;
 
+				function delAvatarlog($thiss, $userObj, $opt) {
+					global $wgAvatarLogInRC;
 					$logEntry = new \ManualLogEntry('avatar', 'delete');
-					$logEntry->setPerformer($this->getUser());
+					$logEntry->setPerformer($thiss->getUser());
 					$logEntry->setTarget($userObj->getUserPage());
 					$logEntry->setComment($opt->getValue('reason'));
 					$logId = $logEntry->insert();
 					$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
 				}
+				if (!$wgAvatarEnableS3) {
+					if (Avatars::deleteAvatar($userObj)) {
+						delAvatarlog($this, $userObj, $opt);
+					}
+				} else {
+					$delResults = OSSdispose::deleteOSS($userObj->getId(), true);
+					if (!$delResults['code']) {
+						delAvatarlog($this, $userObj, $opt);
+					}
+
+				}
+
 			}
 		}
 
@@ -61,8 +74,10 @@ class SpecialView extends \SpecialPage {
 			$haveAvatar = Avatars::hasAvatar($userObj);
 
 			if ($haveAvatar) {
+				$query = $wgAvatarEnableS3 ? '' : '&nocache&ver=' . dechex(time());
+				$src = Avatars::getLinkFor($user, 'original') . $query;
 				$html = \Xml::tags('img', array(
-					'src' => Avatars::getLinkFor($user, 'original') . '&nocache&ver=' . dechex(time()),
+					'src' => $src,
 					'height' => 400,
 				), '');
 				$html = \Xml::tags('p', array(), $html);

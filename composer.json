@@ -1,0 +1,21 @@
+{
+    "name": "Avatar",
+	"description": "MediaWiki extension to add <img> tag support.",
+	"type": "mediawiki-extension",
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "awajie",
+			"homepage": "https://github.com/ajdgg"
+		}
+	],
+	"require": {
+		"php": ">=7.4",
+		"aws/aws-sdk-php": "^3.67"
+	},
+    "autoload": {
+        "psr-4": {
+            "Avatar\\": "includes/"
+        }
+    }
+}

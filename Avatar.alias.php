@@ -20,3 +20,14 @@ $specialPageAliases['ja'] = array(
 	'UploadAvatar' => array('アバターをアップロード'),
 	'ViewAvatar' => array('アバターを検査'),
 );
+
+// 在AvatarHooks.php中添加
+$magicWords = [];
+
+$magicWords['en'] = [
+    'Avatar' => [ 0, 'Avatar' ], // 若使用小写名称则需对应
+];
+
+$magicWords['zh-hans'] = [
+    'Avatar' => [ 0, 'Avatar' ], // 若使用小写名称则需对应
+];

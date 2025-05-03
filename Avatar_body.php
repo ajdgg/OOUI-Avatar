@@ -5,8 +5,16 @@ class Avatars {
 
 	public static function getLinkFor($username, $res = false) {
 		global $wgScriptPath;
-		$path = "$wgScriptPath/extensions/Avatar/avatar.php?user=$username";
-		if ($res !== false) {
+		global $wgAvatarEnableS3;
+		$user = \MediaWiki\User\User::newFromName($username);
+		// $path = "$wgScriptPath/extensions/Avatar/avatar.php?user=$username";
+		$path = null;
+		if ($wgAvatarEnableS3) {
+			$path = OSSdispose::getOssImgUrl($user -> getId(), $res ? $res : 'original');
+		} else {
+			$path = "$wgScriptPath/extensions/Avatar/avatar.php?user=$username";
+		}
+		if ($res !== false && !$wgAvatarEnableS3) {
 			return $path . '&res=' . $res;
 		} else {
 			return $path;
@@ -31,6 +39,7 @@ class Avatars {
 
 	public static function getAvatar(\User $user, $res) {
 		global $wgDefaultAvatarRes;
+		global $wgAvatarEnableS3;
 		$path = null;
 
 		// If user exists
@@ -38,27 +47,49 @@ class Avatars {
 			global $wgAvatarUploadDirectory;
 			$avatarPath = "/{$user->getId()}/$res.png";
 
-			// Check if requested avatar thumbnail exists
-			if (file_exists($wgAvatarUploadDirectory . $avatarPath)) {
-				$path = $avatarPath;
-			} else if ($res !== 'original') {
-				// Dynamically generate upon request
-				$originalAvatarPath = "/{$user->getId()}/original.png";
-				if (file_exists($wgAvatarUploadDirectory . $originalAvatarPath)) {
-					$image = Thumbnail::open($wgAvatarUploadDirectory . $originalAvatarPath);
-					$image->createThumbnail($res, $wgAvatarUploadDirectory . $avatarPath);
-					$image->cleanup();
+			if (!$wgAvatarEnableS3) {
+				// Check if requested avatar thumbnail exists
+				if (file_exists($wgAvatarUploadDirectory . $avatarPath)) {
 					$path = $avatarPath;
+				} else if ($res !== 'original') {
+					// Dynamically generate upon request
+					$originalAvatarPath = "/{$user->getId()}/original.png";
+					if (file_exists($wgAvatarUploadDirectory . $originalAvatarPath)) {
+						$image = Thumbnail::open($wgAvatarUploadDirectory . $originalAvatarPath);
+						$image->createThumbnail($res, $wgAvatarUploadDirectory . $avatarPath);
+						$image->cleanup();
+						$path = $avatarPath;
+					}
+				}
+			} else {
+				// OSS
+				$hFile = OSSdispose::CheckFileExist($user->getId(), $res);
+				if (!$hFile['code']) {
+					$path = OSSdispose::getOssImgUrl($user->getId(), $res);
+				} else if ($hFile['code'] === 1 && $res !== 'original') {
+					$BinData = OSSdispose::getImgBinData($user->getId(), $res);
+					if (!$BinData['code']) {
+					    return false;
+					}
+					$thumbnail = Thumbnail::generateThumbnailFromBinary($BinData['data'], $res);
+					OSSdispose::submitOSS($thumbnail, $user->getId(), $res);
+					$path = OSSdispose::getOssImgUrl($user->getId(), $res);
 				}
 			}
 		}
-
 		return $path;
 	}
 
 	public static function hasAvatar(\User $user) {
 		global $wgDefaultAvatar;
-		return self::getAvatar($user, 'original') !== null;
+		global $wgAvatarEnableS3;
+
+		if (!$wgAvatarEnableS3) {
+			return self::getAvatar($user, 'original') !== null;
+		}
+
+		return OSSdispose::CheckFileExist($user->getId(), 'original')['code'] === 0;
+		
 	}
 
 	public static function deleteAvatar(\User $user) {

@@ -1,5 +1,4 @@
 <?php
-
 // For some configurations, extensions are symbolic linked
 // This is the workaround for ../..
 $dir = dirname(dirname(dirname($_SERVER['SCRIPT_FILENAME'])));
@@ -35,7 +34,15 @@ if (isset($query['user'])) {
 }
 
 $response = $wgRequest->response();
-
+if (filter_var($path, FILTER_VALIDATE_URL)) {
+    // If $path is a full URL, redirect directly
+    $response->statusHeader('302');
+    $response->header('Location: ' . $path);
+    if (!isset($query['nocache'])) {
+        $response->header('Cache-Control: public, max-age=86400');
+    }
+    exit;
+}
 // In order to maximize cache hit and due to
 // fact that default avatar might be external,
 // always redirect

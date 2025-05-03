@@ -6,7 +6,7 @@
 	],
 	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
 	"descriptionmsg": "avatar_desc",
-	"version": "0.1.1",
+	"version": "1.0.1",
 	"license-name": "BSD-2-Clause",
 	"type": "specialpage",
 	"ExtensionMessagesFiles": {
@@ -20,7 +20,8 @@
 	"Hooks": {
 		"GetPreferences": "Avatar\\Hooks::onGetPreferences",
 		"BaseTemplateToolbox": "Avatar\\Hooks::onBaseTemplateToolbox",
-		"SidebarBeforeOutput": "Avatar\\Hooks::onSidebarBeforeOutput"
+		"SidebarBeforeOutput": "Avatar\\Hooks::onSidebarBeforeOutput",
+		"ParserFirstCallInit": "Avatar\\AvatarHooks::onParserFirstCallInit"
 	},
 	"ExtensionFunctions": [
 		"Avatar\\Hooks::onSetup"
@@ -54,7 +55,7 @@
 		"Avatar\\Thumbnail": "Thumbnail.php",
 		"Avatar\\SpecialUpload": "SpecialUpload.php",
 		"Avatar\\SpecialView": "SpecialView.php",
-		"Avatar\\UploadLogFormatter": "includes/UploadLogFormatter.php"
+		"Avatar\\AvatarHooks": "includes/Hooks/AvatarHooks.php"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",
@@ -93,7 +94,11 @@
 		"AvatarServingMethod": "redirect",
 		"AvatarLogInRC": true,
 		"AvatarUploadPath": false,
-		"AvatarUploadDirectory": false
+		"AvatarUploadDirectory": false,
+		"AvatarEnableS3": false,
+		"AvatarS3Config": [],
+		"AvatarS3Path": "",
+		"AvatarS3URL": ""
 	},
 	"manifest_version": 1
 }

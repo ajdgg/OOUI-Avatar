@@ -14,6 +14,24 @@ The configuration is fully compatible with Avatar
 **Note.** There are API changes when upgrading 0.9.2 to 1.0.0. The change is very likely to break your site. See section below for details. -->
 
 ## Install
+* main Branches
+    * 在根目录`composer.local.json`添加:
+
+        ```json
+            {
+                "extra": {
+                    "merge-plugin": {
+                        "include": [
+                            "extensions/Avatar/composer.json"
+                        ]
+                    }
+                }
+            }
+        ```
+    * 安装依赖
+* NotOSS Branches
+    * 无需依赖安装
+
 * Install php-gd, which is a dependency of this extension
 * Clone the respository, rename it to Avatar and copy to extensions folder
 * Add `wfLoadExtension('Avatar')`; to your LocalSettings.php
@@ -36,7 +54,24 @@ The configuration is fully compatible with Avatar
 * You can set user rights: 
 	* `avatarupload`: User need this right to upload ones' own avatar.
 	* `avataradmin`: User need this right to delete others' avatars.
+## OSS
+```php
+将$wgAvatarEnableS3 设置为true来启用OSS支持。
 
+$wgAvatarS3URL 设置OSS的URL，例如：http://avatar.example.com/
+
+$wgAvatarS3Path 设置OSS的目录，例如：avatar
+
+$wgAvatarS3Config = [
+    'region'  => 'oss-cn-hangzhou', 设置OSS的区域，例如：oss-cn-hangzhou
+	'bucket' => 'awajie', 设置OSS的Bucket名称
+	'endpoint' => 'http://oss-cn-hangzhou.aliyuncs.com', 设置OSS的Endpoint
+	'credentials' => [
+		'key'    => '********', 设置OSS的AccessKey ID
+		'secret' => '********', 设置OSS的AccessKey Secret
+	]
+];
+```
 ## How to use
 * Set avatar in user preference, and then `$wgScriptPath/extensions/Avatar/avatar.php?user=username` will be redirected to your avatar.
 * You can set alias for this php to make it shorter.

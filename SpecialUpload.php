@@ -5,6 +5,8 @@ use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
 use OOUI;
 
+use Avatar\OSSdispose;
+
 class SpecialUpload extends \SpecialPage {
 
 	public function __construct() {
@@ -44,8 +46,7 @@ class SpecialUpload extends \SpecialPage {
 		$this->displayForm();
 	}
 
-	private function displayMessage($msg) { 
-		// if (!$msg) return;
+	private function displayMessage($msg) {
 		$infoBox = new OOUI\MessageWidget(
 			[
 				'type' => 'error',
@@ -60,7 +61,6 @@ class SpecialUpload extends \SpecialPage {
 				]
 			]
 		);
-		// $infoBox -> toggle($msg ? true : false);
 		$this->getOutput()->addHTML($infoBox);
 	}
 
@@ -104,24 +104,51 @@ class SpecialUpload extends \SpecialPage {
 			return false;
 		}
 
-		$user = $this->getUser();
-		Avatars::deleteAvatar($user);
-
-		// Avatar directories
-		global $wgAvatarUploadDirectory;
-		$uploadDir = $wgAvatarUploadDirectory . '/' . $this->getUser()->getId() . '/';
-		@mkdir($uploadDir, 0755, true);
-
-		// We do this to convert format to png
-		$img->createThumbnail($wgMaxAvatarResolution, $uploadDir . 'original.png');
-
-		// We only create thumbnail with default resolution here. Others are generated on demand
+		// 判断进oss存储逻辑
 		global $wgDefaultAvatarRes;
-		$img->createThumbnail($wgDefaultAvatarRes, $uploadDir . $wgDefaultAvatarRes . '.png');
+		global $wgAvatarEnableS3;
+		if (!$wgAvatarEnableS3) {
+			$user = $this->getUser();
+			Avatars::deleteAvatar($user);
 
-		$img->cleanup();
+			// Avatar directories
+			global $wgAvatarUploadDirectory;
+			$uploadDir = $wgAvatarUploadDirectory . '/' . $this->getUser()->getId() . '/';
+			@mkdir($uploadDir, 0755, true);
 
-		$this->displayMessage($this->msg('avatar-saved'));
+			// We do this to convert format to png
+			$img->createThumbnail($wgMaxAvatarResolution, $uploadDir . 'original.png');
+
+			// We only create thumbnail with default resolution here. Others are generated on demand
+			$img->createThumbnail($wgDefaultAvatarRes, $uploadDir . $wgDefaultAvatarRes . '.png');
+
+			$img->cleanup();
+
+			$this->displayMessage($this->msg('avatar-saved'));
+
+		} else {
+			// OSS
+			if (strpos($dataurl, 'data:image/') !== 0) {
+				$this->displayMessage($this->msg('avatar-invalid'));
+				return false;
+			}
+			
+			// 3. 去除 data:image/png;base64, 前缀
+			OSSdispose::deleteOSS($this -> getUser()->getId());
+			$base64Data = explode(',', $dataurl, 2)[1];
+			$imgBinaryData = base64_decode($base64Data);
+			$UpResultsA = OSSdispose::submitOSS($imgBinaryData, $this -> getUser()->getId());
+			if ($UpResultsA['code']) {
+				$this->displayMessage($UpResultsA['msg']);
+				return false;
+			}
+			$thumbnailImgBinaryData = $img -> getThumbnailImageBinaryData($wgDefaultAvatarRes);
+			$UpResultsB = OSSdispose::submitOSS($thumbnailImgBinaryData, $this -> getUser()->getId(), $wgDefaultAvatarRes);
+			if ($UpResultsB['code']) {
+				$this->displayMessage($UpResultsB['msg']);
+				return false;
+			}
+		}
 
 		global $wgAvatarLogInRC;
 
