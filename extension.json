@@ -55,8 +55,9 @@
 		"Avatar\\Thumbnail": "Thumbnail.php",
 		"Avatar\\SpecialUpload": "SpecialUpload.php",
 		"Avatar\\SpecialView": "SpecialView.php",
+		"Avatar\\UploadLogFormatter": "includes/UploadLogFormatter.php",
 		"Avatar\\AvatarHooks": "includes/Hooks/AvatarHooks.php",
-		"Avatar\\OSSdispose": "includes/OSSdispose.php"
+		"Avatar\\OSSdispose": "includes/OSSDispose.php"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",
