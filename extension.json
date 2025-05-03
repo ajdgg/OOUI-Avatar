@@ -6,7 +6,7 @@
 	],
 	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
 	"descriptionmsg": "avatar_desc",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"license-name": "BSD-2-Clause",
 	"type": "specialpage",
 	"ExtensionMessagesFiles": {
@@ -55,7 +55,8 @@
 		"Avatar\\Thumbnail": "Thumbnail.php",
 		"Avatar\\SpecialUpload": "SpecialUpload.php",
 		"Avatar\\SpecialView": "SpecialView.php",
-		"Avatar\\AvatarHooks": "includes/Hooks/AvatarHooks.php"
+		"Avatar\\AvatarHooks": "includes/Hooks/AvatarHooks.php",
+		"Avatar\\OSSdispose": "includes/OSSdispose.php"
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "",

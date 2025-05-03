@@ -5,8 +5,6 @@ use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
 use OOUI;
 
-use Avatar\OSSdispose;
-
 class SpecialUpload extends \SpecialPage {
 
 	public function __construct() {

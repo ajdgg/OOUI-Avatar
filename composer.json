@@ -12,10 +12,5 @@
 	"require": {
 		"php": ">=7.4",
 		"aws/aws-sdk-php": "^3.67"
-	},
-    "autoload": {
-        "psr-4": {
-            "Avatar\\": "includes/"
-        }
-    }
+	}
 }
