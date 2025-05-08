@@ -6,7 +6,7 @@
 	],
 	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
 	"descriptionmsg": "avatar_desc",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"license-name": "BSD-2-Clause",
 	"type": "specialpage",
 	"ExtensionMessagesFiles": {
@@ -43,6 +43,14 @@
 				"avatar-toosmall",
 				"uploadavatar-nofile",
 				"uploadavatar-hint"
+			]
+		},
+		"ext.avatar.view": {
+			"dependencies": [
+				"oojs-ui-core"
+			],
+			"styles": [
+				"assets/view.css"
 			]
 		},
 		"ext.avatar.canvas": {

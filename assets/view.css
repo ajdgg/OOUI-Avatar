@@ -1,0 +1,11 @@
+/* 
+为view页面布局补充样式
+by awajie
+*/
+.avatar-flex-auto {
+	flex: auto;
+}
+
+.avatar-max-width-50em {
+	max-width: 50em;
+}

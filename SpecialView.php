@@ -2,14 +2,28 @@
 namespace Avatar;
 
 use MediaWiki\MediaWikiServices;
+use MediaWiki\Html\Html;
+use OOUI;
+
 
 class SpecialView extends \SpecialPage {
 
 	public function __construct() {
 		parent::__construct('ViewAvatar');
 	}
-
+    public function delAvatarlog($userObj, $opt) {
+        global $wgAvatarLogInRC;
+        $logEntry = new \ManualLogEntry('avatar', 'delete');
+        $logEntry->setPerformer($this->getUser());
+        $logEntry->setTarget($userObj->getUserPage());
+        $logEntry->setComment($opt->getValue('reason'));
+        $logId = $logEntry->insert();
+        $logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
+    }
 	public function execute($par) {
+		OOUI\Theme::setSingleton(new OOUI\WikimediaUITheme);
+		OOUI\Element::setDefaultDir('rtl');
+
 		// Shortcut by using $par
 		global $wgAvatarEnableS3;
 		if ($par) {
@@ -54,12 +68,12 @@ class SpecialView extends \SpecialPage {
 				}
 				if (!$wgAvatarEnableS3) {
 					if (Avatars::deleteAvatar($userObj)) {
-						delAvatarlog($this, $userObj, $opt);
+						$this -> delAvatarlog( $userObj, $opt);
 					}
 				} else {
 					$delResults = OSSdispose::deleteOSS($userObj->getId(), true);
 					if (!$delResults['code']) {
-						delAvatarlog($this, $userObj, $opt);
+						$this -> delAvatarlog($userObj, $opt);
 					}
 
 				}
@@ -68,6 +82,7 @@ class SpecialView extends \SpecialPage {
 		}
 
 		$this->getOutput()->addModules(array('mediawiki.userSuggest'));
+		$this->getOutput()->addModules('ext.avatar.view');
 		$this->showForm($user);
 
 		if ($userExists) {
@@ -76,11 +91,11 @@ class SpecialView extends \SpecialPage {
 			if ($haveAvatar) {
 				$query = $wgAvatarEnableS3 ? '' : '&nocache&ver=' . dechex(time());
 				$src = Avatars::getLinkFor($user, 'original') . $query;
-				$html = \Xml::tags('img', array(
+				$html = html::element('img', [
 					'src' => $src,
-					'height' => 400,
-				), '');
-				$html = \Xml::tags('p', array(), $html);
+					'style' => 'margin: 1rem 0; width: 100%; max-width: 400px; height: auto;',
+				]);
+				$html = Html::rawElement('p', [], $html);
 				$this->getOutput()->addHTML($html);
 
 				// Add a delete button
@@ -99,29 +114,49 @@ class SpecialView extends \SpecialPage {
 		global $wgScript;
 
 		// This is essential as we need to submit the form to this page
-		$html = \Html::hidden('title', $this->getPageTitle());
+		$html = Html::hidden('title', $this->getPageTitle());
 
-		$html .= \Xml::inputLabel(
-			$this->msg('viewavatar-username')->text(),
-			'user',
-			'',
-			45,
-			$user,
-			array('class' => 'mw-autocomplete-user') # This together with mediawiki.userSuggest will give us an auto completion
-		);
+		$html .= Html::element('legend', ['style' => 'font-size: 1rem'], $this->msg('viewavatar-legend')->text());
 
-		$html .= ' ';
+		$userNameBtn = new OOUI\ActionFieldLayout( new OOUI\TextInputWidget([
+			'name' => 'user',
+			'id' => 'user',
+			'value' => $user,
+			'placeholder' => $this->msg('viewavatar-username')->text(),
+		]),new OOUI\ButtonInputWidget([
+			'label' => $this->msg('viewavatar-submit')->text(),
+			'type' => 'submit',
+			'id' => 'submit',
+		]), [
+			'classes' => [ 'avatar-flex-auto', 'avatar-max-width-50em' ]
+		]);
 
-		// Submit button
-		$html .= \Xml::submitButton($this->msg('viewavatar-submit')->text());
+		$html .= new OOUI\HorizontalLayout([
+			'content' => [
+				new OOUI\HtmlSnippet(Html::element('div', ['style' => 'margin: auto 0;'], $this->msg('viewavatar-username')->text())),
+				$userNameBtn
+			]
+		]);
 
-		// Fieldset
-		$html = \Xml::fieldset($this->msg('viewavatar-legend')->text(), $html);
+		// // Fieldset
+		$fieldset = Html::rawElement('fieldset', [
+			'class' => 'mw-fieldset'
+		], $html);
+		$customWidget = new OOUI\Widget([
+			'content' => [
+				new OOUI\HtmlSnippet($fieldset),
+			]
+		]);
+		// // Wrap with a form
+		$showForm = new OOUI\FormLayout([
+			'action' => $wgScript,
+			'method' => 'get',
+			'items' => [
+				$customWidget,
+			],
+		]);
 
-		// Wrap with a form
-		$html = \Xml::tags('form', array('action' => $wgScript, 'method' => 'get'), $html);
-
-		$this->getOutput()->addHTML($html);
+		$this->getOutput()->addHTML($showForm);
 	}
 
 	private function showDeleteForm($user) {
@@ -132,24 +167,41 @@ class SpecialView extends \SpecialPage {
 		$html .= \Html::hidden('delete', 'true');
 		$html .= \Html::hidden('user', $user);
 
-		$html .= \Xml::inputLabel(
-			$this->msg('viewavatar-delete-reason')->text(),
-			'reason',
-			'',
-			45
-		);
+		$html .= Html::element('legend', ['style' => 'font-size: 1rem'], $this->msg('viewavatar-delete-legend')->text());
 
-		$html .= ' ';
+		$userNameBtn = new OOUI\ActionFieldLayout( new OOUI\TextInputWidget([
+			'name' => 'reason',
+			// 'placeholder' => $this->msg('viewavatar-username')->text(),
+		]),new OOUI\ButtonInputWidget([
+			'label' => $this->msg('viewavatar-delete-submit')->text(),
+			'type' => 'submit',
+		]), [
+			'classes' => [ 'avatar-flex-auto', 'avatar-max-width-50em' ]
+		]);
 
-		// Submit button
-		$html .= \Xml::submitButton($this->msg('viewavatar-delete-submit')->text());
+		$html .= new OOUI\HorizontalLayout([
+			'content' => [
+				new OOUI\HtmlSnippet(Html::element('div', ['style' => 'margin: auto 0;'], $this->msg('viewavatar-delete-reason')->text())),
+				$userNameBtn
+			]
+		]);
 
-		// Fieldset
-		$html = \Xml::fieldset($this->msg('viewavatar-delete-legend')->text(), $html);
+		// // Fieldset
+		$fieldset = Html::rawElement('fieldset', [], $html);
+		$customWidget = new OOUI\Widget([
+			'content' => [
+				new OOUI\HtmlSnippet($fieldset),
+			]
+		]);
+		// // Wrap with a form
+		$showDeleteForm = new OOUI\FormLayout([
+			'action' => $wgScript,
+			'method' => 'get',
+			'items' => [
+				$customWidget,
+			],
+		]);
 
-		// Wrap with a form
-		$html = \Xml::tags('form', array('action' => $wgScript, 'method' => 'get'), $html);
-
-		$this->getOutput()->addHTML($html);
+		$this->getOutput()->addHTML($showDeleteForm);
 	}
 }
