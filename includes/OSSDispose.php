@@ -217,7 +217,7 @@ class OSSdispose {
      * @param mixed $FileName
      * @return array{code: int, msg: string}
      */
-    public static function CheckFileExist($userID, $FileName) {
+    public static function CheckFileExist($userID, $FileName='original') {
         $config =  MediaWikiServices::getInstance()->getMainConfig();
         $AvatarConfig = $config -> get('AvatarS3Config');
 
