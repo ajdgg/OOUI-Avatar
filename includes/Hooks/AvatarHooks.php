@@ -12,10 +12,9 @@ class AvatarHooks {
     }
 
     public static function renderAvatar( Parser $parser, ...$value) {
-		global $wgAvatarEnableS3;
 
         $user = User::newFromName($value[0]);
-        $src = $wgAvatarEnableS3 ? OSSdispose::getOssImgUrl($user -> getId(), 'original') : '/images/avatars' . Avatars::getAvatar( $user, 256);
+        $src = '/images/avatars' . Avatars::getAvatar( $user, 256);
         $html = Html::element( 'img', [
             'src' => $src,
             'alt' => 'Avatar',

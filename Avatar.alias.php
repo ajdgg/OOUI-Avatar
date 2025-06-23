@@ -20,3 +20,13 @@ $specialPageAliases['ja'] = array(
 	'UploadAvatar' => array('アバターをアップロード'),
 	'ViewAvatar' => array('アバターを検査'),
 );
+
+$magicWords = [];
+
+$magicWords['en'] = [
+    'Avatar' => [ 0, 'Avatar' ],
+];
+
+$magicWords['zh-hans'] = [
+    'Avatar' => [ 0, 'Avatar' ],
+];

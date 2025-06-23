@@ -44,8 +44,7 @@ class SpecialUpload extends \SpecialPage {
 		$this->displayForm();
 	}
 
-	private function displayMessage($msg) { 
-		// if (!$msg) return;
+	private function displayMessage($msg) {
 		$infoBox = new OOUI\MessageWidget(
 			[
 				'type' => 'error',
@@ -60,7 +59,6 @@ class SpecialUpload extends \SpecialPage {
 				]
 			]
 		);
-		// $infoBox -> toggle($msg ? true : false);
 		$this->getOutput()->addHTML($infoBox);
 	}
 
@@ -104,6 +102,8 @@ class SpecialUpload extends \SpecialPage {
 			return false;
 		}
 
+		// 判断进oss存储逻辑
+		global $wgDefaultAvatarRes;
 		$user = $this->getUser();
 		Avatars::deleteAvatar($user);
 
@@ -116,12 +116,13 @@ class SpecialUpload extends \SpecialPage {
 		$img->createThumbnail($wgMaxAvatarResolution, $uploadDir . 'original.png');
 
 		// We only create thumbnail with default resolution here. Others are generated on demand
-		global $wgDefaultAvatarRes;
 		$img->createThumbnail($wgDefaultAvatarRes, $uploadDir . $wgDefaultAvatarRes . '.png');
 
 		$img->cleanup();
 
 		$this->displayMessage($this->msg('avatar-saved'));
+
+
 
 		global $wgAvatarLogInRC;
 
