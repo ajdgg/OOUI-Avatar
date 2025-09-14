@@ -38,7 +38,6 @@ class Avatars {
 	}
 
 	public static function getAvatar(\User $user, $res) {
-		global $wgDefaultAvatarRes;
 		global $wgAvatarEnableS3;
 		$path = null;
 
@@ -63,7 +62,9 @@ class Avatars {
 				}
 			} else {
 				// OSS
+				print_r("getAvatar output: " . $path . "\n");
 				$hFile = OSSdispose::CheckFileExist($user->getId(), $res);
+				print_r("CheckFileExist output: " . $hFile . "\n");
 				if (!$hFile['code']) {
 					$path = OSSdispose::getOssImgUrl($user->getId(), $res);
 				} else if ($hFile['code'] === 1 && $res !== 'original') {
@@ -77,6 +78,7 @@ class Avatars {
 				}
 			}
 		}
+		print_r("getAvatar output: " . $path . "\n");
 		return $path;
 	}
 

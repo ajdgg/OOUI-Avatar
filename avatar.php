@@ -58,9 +58,6 @@ if ($path === null) {
 
 	global $wgDefaultAvatar;
 	$response->header('Location: ' . $wgDefaultAvatar);
-
-	$mediawiki = new MediaWiki();
-	$mediawiki->doPostOutputShutdown('fast');
 	exit;
 }
 
@@ -119,6 +116,3 @@ default:
 	$response->header('Location: ' . $wgAvatarUploadPath . $path);
 	break;
 }
-
-$mediawiki = new MediaWiki();
-$mediawiki->doPostOutputShutdown('fast');

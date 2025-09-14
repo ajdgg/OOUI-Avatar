@@ -1,6 +1,7 @@
 <?php
 namespace Avatar;
 
+use MediaWiki;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Html\Html;
 use OOUI;
@@ -37,7 +38,7 @@ class SpecialView extends \SpecialPage {
 		$this->outputHeader();
 
 		// Parse options
-		$opt = new \FormOptions;
+		$opt = new \MediaWiki\Html\FormOptions();
 		$opt->add('user', '');
 		$opt->add('delete', '');
 		$opt->add('reason', '');
@@ -162,9 +163,9 @@ class SpecialView extends \SpecialPage {
 		global $wgScript;
 
 		// This is essential as we need to submit the form to this page
-		$html = \Html::hidden('title', $this->getPageTitle());
-		$html .= \Html::hidden('delete', 'true');
-		$html .= \Html::hidden('user', $user);
+		$html = Html::hidden('title', $this->getPageTitle());
+		$html .= Html::hidden('delete', 'true');
+		$html .= Html::hidden('user', $user);
 
 		$html .= Html::element('legend', ['style' => 'font-size: 1rem'], $this->msg('viewavatar-delete-legend')->text());
 
