@@ -1,9 +1,7 @@
 <?php
 namespace Avatar;
 
-use MediaWiki\Html\Html;
 use MediaWiki\MediaWikiServices;
-use OOUI;
 
 class SpecialUpload extends \SpecialPage {
 
@@ -14,9 +12,6 @@ class SpecialUpload extends \SpecialPage {
 
 	public function execute($par) {
 		$this->requireLogin('prefsnologintext2');
-
-		OOUI\Theme::setSingleton(new OOUI\WikimediaUITheme);
-		OOUI\Element::setDefaultDir('rtl');
 
 		$this->setHeaders();
 		$this->outputHeader();
@@ -35,39 +30,23 @@ class SpecialUpload extends \SpecialPage {
 		$this->getOutput()->addModules('ext.avatar.upload');
 
 		if ($request->wasPosted()) {
-			if ($this->processUpload()) {
-				$this->getOutput()->redirect(\SpecialPage::getTitleFor('Preferences')->getLinkURL());
-			}
-		} else {
-			$this->displayMessage('');
+			$this->processUpload();
 		}
-		$this->displayForm();
-	}
-
-	private function displayMessage($msg) {
-		$infoBox = new OOUI\MessageWidget(
-			[
-				'type' => 'error',
-				'infusable' => true,
-				'id' => 'errorMsg',
-				'label' => $msg,
-				'data' => [
-					'data-ooui' => json_encode([
-						'type' => 'error',
-						'label' => $msg
-					])
-				]
-			]
-		);
-		$this->getOutput()->addHTML($infoBox);
+		else {
+			$this->displayForm();
+		}
 	}
 
 	private function processUpload() {
 		$request = $this->getRequest();
+		$out = $this->getOutput();
+		$out -> disable();
+		header( 'Content-Type: application/json' );
 		$dataurl = $request->getVal('avatar');
 		if (!$dataurl || parse_url($dataurl, PHP_URL_SCHEME) !== 'data') {
-			$this->displayMessage($this->msg('avatar-notuploaded'));
-			return false;
+			http_response_code(500);
+			echo json_encode( [ 'msg' => $this->msg('avatar-notuploaded')-> text() ] );
+			exit;
 		}
 
 		$img = Thumbnail::open($dataurl);
@@ -80,29 +59,50 @@ class SpecialUpload extends \SpecialPage {
 		case IMAGETYPE_JPEG:
 			break;
 		default:
-			$this->displayMessage($this->msg('avatar-invalid'));
-			return false;
+			http_response_code(500);
+			echo json_encode( [ 'msg' => $this->msg('avatar-invalid')-> text() ] );
+			exit;
 		}
 
 		// Must be square
 		if ($img->width !== $img->height) {
-			$this->displayMessage($this->msg('avatar-notsquare'));
-			return false;
+			http_response_code(500);
+			echo json_encode( [ 'msg' => $this->msg('avatar-notsquare')-> text() ] );
+			exit;
 		}
 
 		// Check if image is too small
 		if ($img->width < 32 || $img->height < 32) {
-			$this->displayMessage($this->msg('avatar-toosmall'));
-			return false;
+			http_response_code(500);
+			echo json_encode( [ 'msg' => $this->msg('avatar-toosmall')-> text() ] );
+			exit;
 		}
 
 		// Check if image is too big
 		if ($img->width > $wgMaxAvatarResolution || $img->height > $wgMaxAvatarResolution) {
-			$this->displayMessage($this->msg('avatar-toolarge'));
-			return false;
+			http_response_code(500);
+			echo json_encode( [ 'msg' => $this->msg('avatar-toolarge')-> text() ] );
+			exit;
 		}
 
+		$results = $this->fileUpload($img, $dataurl);
+
+		global $wgAvatarLogInRC;
+
+		$logEntry = new \ManualLogEntry('avatar', 'upload');
+		$logEntry->setPerformer($this->getUser());
+		$logEntry->setTarget($this->getUser()->getUserPage());
+		$logId = $logEntry->insert();
+		$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
+
+		header( 'Content-Type: application/json' );
+		!$results[0] && http_response_code(500);
+		echo json_encode( [ 'msg' => $results[0] ? $this->msg('upload-avatar-success')->text() : $results[1] ] );
+	}
+
+	public function fileUpload($img, $dataurl) {
 		// 判断进oss存储逻辑
+		global $wgMaxAvatarResolution;
 		global $wgDefaultAvatarRes;
 		global $wgAvatarEnableS3;
 		if (!$wgAvatarEnableS3) {
@@ -122,13 +122,12 @@ class SpecialUpload extends \SpecialPage {
 
 			$img->cleanup();
 
-			$this->displayMessage($this->msg('avatar-saved'));
+			return [true, 'avatar_success'];
 
-		} else {
+		} else { 
 			// OSS
 			if (strpos($dataurl, 'data:image/') !== 0) {
-				$this->displayMessage($this->msg('avatar-invalid'));
-				return false;
+				return [false, 'avatar_invalid'];
 			}
 			
 			// 3. 去除 data:image/png;base64, 前缀
@@ -137,77 +136,72 @@ class SpecialUpload extends \SpecialPage {
 			$imgBinaryData = base64_decode($base64Data);
 			$UpResultsA = OSSdispose::submitOSS($imgBinaryData, $this -> getUser()->getId());
 			if ($UpResultsA['code']) {
-				$this->displayMessage($UpResultsA['msg']);
-				return false;
+				return [false, $UpResultsA['msg']];
 			}
 			$thumbnailImgBinaryData = $img -> getThumbnailImageBinaryData($wgDefaultAvatarRes);
 			$UpResultsB = OSSdispose::submitOSS($thumbnailImgBinaryData, $this -> getUser()->getId(), $wgDefaultAvatarRes);
 			if ($UpResultsB['code']) {
-				$this->displayMessage($UpResultsB['msg']);
-				return false;
+				return [false, $UpResultsB['msg']];
 			}
+
+			return [true, 'avatar_success'];
 		}
-
-		global $wgAvatarLogInRC;
-
-		$logEntry = new \ManualLogEntry('avatar', 'upload');
-		$logEntry->setPerformer($this->getUser());
-		$logEntry->setTarget($this->getUser()->getUserPage());
-		$logId = $logEntry->insert();
-		$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
-
-		return true;
 	}
 
 	public function displayForm() {
+		global $wgScriptPath;
 
-		$inputAvatar = Html::hidden('avatar', '', ['id' => 'avatar']);
-		$customWidget = new OOUI\Widget([
-			'content' => [
-				new OOUI\HtmlSnippet('<p id="avatar-error"></p>'),
-				new OOUI\HtmlSnippet($inputAvatar),
-				new OOUI\HtmlSnippet('<div id="crop"></div>')
-			]
-		]);
+		$this->getOutput()->addHTML('<div id="tips">' . $this->msg('uploadavatar-notice')->parseAsBlock() . '</div>');
 
-		$pickfile = new OOUI\ButtonWidget([
-			'label' => $this->msg('uploadavatar-selectfile')->text(),
-			'id' => 'pickfile',
-		]);
+		$this->getOutput()->addHTML('<div id="avatar-presentation-region">
+			<span id="upload-avatar-btn" class="upload-avatar-btn">
+				<span class="upl-svg"></span>
+				<span id="upload-avatar-btn-text">' . $this->msg('action-avatarupload')->text() . '</span>
+			</span>
+			<i style="margin: 0 1rem;"></i>
+			<div id="avatar-presentation">
+				<img class="current-avatar" alt="' . $this->msg('uploadavatar-nofile') -> text() .'" src=" ' . $wgScriptPath . '/extensions/Avatar/avatar.php?user=' . $this->getUser()->getName() .'&amp;res=original&amp;nocache&amp;ver='. strtolower(dechex(floor(time()))) .'">
+				<span>' . $this->msg('uploadavatar-nofile') -> text() . '</span>
+			</div>
+		</div>');
 
-		$submit = new OOUI\ButtonInputWidget([
-			'label' => $this->msg('uploadavatar-submit')->text(),
-			'type' => 'submit',
-			'id' => 'submit',
-			'disabled' => 'disabled',
-			'useInputTag' => true,
-			'infusable' => true,
-			'flags' => [
-				'primary',
-				'progressive'
-			],
-			'data' => [
-				'data-ooui' => json_encode([
-					'type' => 'submit',
-					'label' => $this->msg('uploadavatar-submit')->text()
-				])
-			]
-		]);
-
-		$as = new OOUI\FormLayout([
-			'id' => 'avatar-form',
-			'method' => 'post',
-			'action' => $this->getPageTitle()->getLinkURL(),
-			'classes' => ['avatar-form'],
-			'items' => [
-				$customWidget,
-				$pickfile,
-				$submit,
-			]
-		]);
-		$this->getOutput()->addWikiMsg('uploadavatar-notice');
-		$this->getOutput()->addHTML($as);
-
+		$this->getOutput()->addHTML('<div id="clipping-area" style="display: none;">
+			<div id="clipping-function-area">
+				<div id="crop">
+					<canvas id="avatar-canvas"></canvas>
+					<div id="cropper" class="cropper" name="cropper" >
+						<div class="up"></div>
+						<div class="down"></div>
+						<div class="left"></div>
+						<div class="right"></div>
+						<div class="tl-resizer"></div>
+						<div class="tr-resizer"></div>
+						<div class="bl-resizer"></div>
+						<div class="br-resizer"></div>
+						<div class="x"></div>
+						<div class="y"></div>
+					</div>
+				</div>
+			</div>
+			<i style="margin: 0 1rem;"></i>
+			<div class="avatar-preview-region">
+				<div id="avatar-preview">
+					<canvas id="avatar-preview-canvas"></canvas>
+					<span>'. $this->msg('preview-avatar') -> text() . '</span>
+				</div>
+				<div class="function-button-area"> 
+					<span id="determine-upload-btn" class="upload-avatar-btn function-area btn-bgblue">
+						<span id="upload-avatar-btn-text">' . $this->msg('action-avatarupload')->text() . '</span>
+					</span>
+					<span id="reselect-the-avatar" class="upload-avatar-btn function-area">
+						<span id="upload-avatar-btn-text">' . $this->msg('reselect-the-avatar')->text() . '</span>
+					</span>
+					<span id="cancel-avatarupload" class="upload-avatar-btn function-area">
+						<span id="upload-avatar-btn-text">' . $this->msg('cancel-avatarupload')->text() . '</span>
+					</span>
+				</div>
+			</div>
+		</div>');
 	}
 
 	public function isListed() {

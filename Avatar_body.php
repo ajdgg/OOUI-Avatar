@@ -94,16 +94,25 @@ class Avatars {
 
 	public static function deleteAvatar(\User $user) {
 		global $wgAvatarUploadDirectory;
+		global $wgAvatarEnableS3;
+
+		if ($wgAvatarEnableS3) {
+			$delResults = OSSdispose::deleteOSS($user->getId(), true);
+			if (!$delResults['code']) {
+				return [true, ''];
+			}
+			return [false, $delResults['msg']];
+		}
 		$dirPath = $wgAvatarUploadDirectory . "/{$user->getId()}/";
 		if (!is_dir($dirPath)) {
-			return false;
+			return [false, 'no_avatar_dir'];
 		}
 		$files = glob($dirPath . '*', GLOB_MARK);
 		foreach ($files as $file) {
 			unlink($file);
 		}
 		rmdir($dirPath);
-		return true;
+		return [true, ''];
 	}
 
 }

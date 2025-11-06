@@ -6,7 +6,7 @@
 	],
 	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
 	"descriptionmsg": "avatar_desc",
-	"version": "1.0.3",
+	"version": "0.2.0",
 	"license-name": "BSD-2-Clause",
 	"type": "specialpage",
 	"ExtensionMessagesFiles": {
@@ -21,7 +21,8 @@
 		"GetPreferences": "Avatar\\Hooks::onGetPreferences",
 		"BaseTemplateToolbox": "Avatar\\Hooks::onBaseTemplateToolbox",
 		"SidebarBeforeOutput": "Avatar\\Hooks::onSidebarBeforeOutput",
-		"ParserFirstCallInit": "Avatar\\AvatarHooks::onParserFirstCallInit"
+		"ParserFirstCallInit": "Avatar\\AvatarHooks::onParserFirstCallInit",
+		"BeforePageDisplay": "Avatar\\Hooks::onBeforePageDisplay"
 	},
 	"ExtensionFunctions": [
 		"Avatar\\Hooks::onSetup"
@@ -29,8 +30,8 @@
 	"ResourceModules": {
 		"ext.avatar.upload": {
 			"dependencies": [
-				"oojs-ui-core",
-				"ext.avatar.canvas"
+				"ext.avatar.canvas",
+				"ext.avatar.log"
 			],
 			"scripts":[
 				"assets/upload.js"
@@ -47,14 +48,54 @@
 		},
 		"ext.avatar.view": {
 			"dependencies": [
-				"oojs-ui-core"
+				"ext.avatar.log"
+			],
+			"scripts": [
+				"assets/view.js"
 			],
 			"styles": [
 				"assets/view.css"
+			],
+			"messages": [
+				"viewavatar-nouser",
+				"viewavatar-noavatar",
+				"viewavatar-avatar-preview-tips"
+			]
+				
+		},
+		"ext.avatar.UserLinkAvatar": {
+			"scripts": [
+				"example/Gadget-UserLinkAvatar.js"
+			],
+			"styles": [
+				"example/Gadget-UserLinkAvatar.css"
+			]
+		},
+		"ext.avatar.ShowAvatar": {
+			"dependencies": [
+				"mediawiki.user"
+			],
+			"scripts": [
+				"example/Gadget-ShowAvatar.js"
+			],
+			"styles": [
+				"example/Gadget-ShowAvatar.css"
+			]
+		},
+		"ext.avatar.UserPageTitleAvatar": {
+			"dependencies": [
+				"mediawiki.user"
+			],
+			"scripts": [
+				"example/Gadget-UserPageTitleAvatar.js"
 			]
 		},
 		"ext.avatar.canvas": {
             "scripts": ["assets/canvas.js"]
+        },
+		"ext.avatar.log": {
+            "scripts": ["assets/log.js"],
+			"styles": ["assets/log.css"]
         }
 	},
 	"AutoloadClasses": {
@@ -79,6 +120,9 @@
 		"avatarupload",
 		"avataradmin"
 	],
+	"APIModules": {
+        "AvatarApi": "Avatar\\AvatarApi"
+    },
 	"GroupPermissions": {
 		"user": {
 			"avatarupload": true
@@ -105,10 +149,10 @@
 		"AvatarLogInRC": true,
 		"AvatarUploadPath": false,
 		"AvatarUploadDirectory": false,
-		"AvatarEnableS3": false,
-		"AvatarS3Config": [],
-		"AvatarS3Path": "",
-		"AvatarS3URL": ""
+		"MenuOption": false,
+		"UserLinkAvatar": false,
+		"ShowAvatar": false,
+		"UserPageTitleAvatar": false
 	},
 	"manifest_version": 1
 }
