@@ -2,9 +2,6 @@
 namespace Avatar;
 
 use MediaWiki\MediaWikiServices;
-use MediaWiki\Html\Html;
-use OOUI;
-
 
 class SpecialView extends \SpecialPage {
 
@@ -21,11 +18,10 @@ class SpecialView extends \SpecialPage {
         $logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
     }
 	public function execute($par) {
-		OOUI\Theme::setSingleton(new OOUI\WikimediaUITheme);
-		OOUI\Element::setDefaultDir('rtl');
 
 		// Shortcut by using $par
 		global $wgAvatarEnableS3;
+		global $wgScriptPath;
 		if ($par) {
 			$this->getOutput()->redirect($this->getPageTitle()->getLinkURL(array(
 				'user' => $par,
@@ -41,158 +37,148 @@ class SpecialView extends \SpecialPage {
 		$opt->add('user', '');
 		$opt->add('delete', '');
 		$opt->add('reason', '');
+		$opt->add('q', '');
 		$opt->fetchValuesFromRequest($this->getRequest());
-
-		// Parse user
 		$user = $opt->getValue('user');
-		$userObj = \User::newFromName($user);
+		$q = $opt->getValue('q');
+
+
+		$users = $user ? $user : $q;
+
+		$userObj = \User::newFromName($users);
 		$userExists = $userObj && $userObj->getId() !== 0;
+		$haveAvatar = $userObj && Avatars::hasAvatar($userObj);
+		
+		// Parse user
+		// 在拥有q参数时，返回用户是否有头像，并终止脚本执行
+		if ($q) {
+			header( 'Content-Type: application/json' );
+			$out = $this->getOutput();
+			$out -> disable();
+			if (!$userExists) {
+				echo json_encode([ 'code' => '50001', 'msg' => $this -> msg('viewavatar-nouser') -> text()]);
+				exit;
+			}
+			
+			echo json_encode([
+				'code' => '20000', 
+				'avatar' => $haveAvatar ? "true" : "false", 
+				'msg' => $haveAvatar ? $this -> msg('uploadavatar-nofile') -> text() : $this -> msg('viewavatar-noavatar') -> text()
+			]);
+			exit;
+		}
+		
+		
 
 		// If current task is delete and user is not allowed
 		$canDoAdmin = MediaWikiServices::getInstance()->getPermissionManager()->userHasRight($this->getUser(), 'avataradmin');
 		if ($opt->getValue('delete')) {
+			header( 'Content-Type: application/json' );
+			$out = $this->getOutput();
+			$out -> disable();
 			if (!$canDoAdmin) {
-				throw new \PermissionsError('avataradmin');
+				echo json_encode([
+					'code' => '50002',
+					'msg' => $this -> msg('viewavatar-insufficient-permissions') -> text()
+				]);
+				exit;
 			}
 			// Delete avatar if the user exists
-			if ($userExists) {
+			if (!$userExists) {
+				echo json_encode([ 'code' => '50001', 'msg' => $this -> msg('viewavatar-nouser') -> text()]);
+				exit;
+			}
 
-				function delAvatarlog($thiss, $userObj, $opt) {
-					global $wgAvatarLogInRC;
-					$logEntry = new \ManualLogEntry('avatar', 'delete');
-					$logEntry->setPerformer($thiss->getUser());
-					$logEntry->setTarget($userObj->getUserPage());
-					$logEntry->setComment($opt->getValue('reason'));
-					$logId = $logEntry->insert();
-					$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
-				}
-				if (Avatars::deleteAvatar($userObj)) {
-					$this -> delAvatarlog( $userObj, $opt);
-				}
-
-
+			if (Avatars::deleteAvatar($userObj)) {
+				$this -> delAvatarlog( $userObj, $opt);
+				echo json_encode([ 'code' => '20000', 'msg' => $this -> msg('delete-avatar-success') -> text()]);
 			}
 		}
 
 		$this->getOutput()->addModules(array('mediawiki.userSuggest'));
 		$this->getOutput()->addModules('ext.avatar.view');
-		$this->showForm($user);
+		global $wgDefaultAvatar;
+		$this->getOutput()->addJsConfigVars('wgDefaultAvatar', $wgDefaultAvatar);
 
-		if ($userExists) {
-			$haveAvatar = Avatars::hasAvatar($userObj);
-
-			if ($haveAvatar) {
-				$query = $wgAvatarEnableS3 ? '' : '&nocache&ver=' . dechex(time());
-				$src = Avatars::getLinkFor($user, 'original') . $query;
-				$html = html::element('img', [
-					'src' => $src,
-					'style' => 'margin: 1rem 0; width: 100%; max-width: 400px; height: auto;',
-				]);
-				$html = Html::rawElement('p', [], $html);
-				$this->getOutput()->addHTML($html);
-
-				// Add a delete button
-				if ($canDoAdmin) {
-					$this->showDeleteForm($user);
-				}
-			} else {
-				$this->getOutput()->addWikiMsg('viewavatar-noavatar');
-			}
-		} else if ($user) {
-			$this->getOutput()->addWikiMsg('viewavatar-nouser');
+		if (!$opt->getValue('delete')) {
+			$this -> showInterface($user, $users, $canDoAdmin, $haveAvatar, $userObj, $userExists);
 		}
 	}
 
-	private function showForm($user) {
-		global $wgScript;
+	private function showInterface($user, $users, $canDoAdmin, $haveAvatar, $userObj, $userExists) {
+		global $wgScriptPath;
+		$this->showForm($users, $canDoAdmin, $haveAvatar);
 
-		// This is essential as we need to submit the form to this page
-		$html = Html::hidden('title', $this->getPageTitle());
+		$state = 'no_avatar';
+		if (!$userObj) {
+			$state = 'invalid_object';
+		} elseif (!$userExists) {
+			$state = 'user_not_exists';
+		} elseif ($haveAvatar) {
+			$state = 'has_avatar';
+		}
 
-		$html .= Html::element('legend', ['style' => 'font-size: 1rem'], $this->msg('viewavatar-legend')->text());
+		$message = '';
+		switch ($state) {
+			case 'invalid_object':
+				break;
+			case 'user_not_exists':
+				$message = $this->msg('viewavatar-nouser')->text();
+				break;
+			case 'has_avatar':
+				$message = $this->msg('viewavatar-avatar-preview-tips', $users)->text();
+				break;
+			case 'no_avatar':
+				$message = $this->msg('viewavatar-noavatar')->text();
+				break;
+		}
 
-		$userNameBtn = new OOUI\ActionFieldLayout( new OOUI\TextInputWidget([
-			'name' => 'user',
-			'id' => 'user',
-			'value' => $user,
-		]),new OOUI\ButtonInputWidget([
-			'label' => $this->msg('viewavatar-submit')->text(),
-			'type' => 'submit',
-			'id' => 'submit',
-		]), [
-			'classes' => [ 'avatar-flex-auto', 'avatar-max-width-50em' ]
-		]);
+		$this->getOutput()-> addHTML('
+		<div>
+			<img id="avatar-preview" alt="avatar" style="display:' . ($user && $userExists && $haveAvatar ? 'block' : 'none') . ';width: 100%;height: 100%;" src="' . ($user && $userExists ? $wgScriptPath . '/extensions/Avatar/avatar.php?user=' . $user .'&amp;res=original&amp;nocache&amp;ver='. strtolower(dechex(floor(time()))) : '') . '" />
+			<span class="avatar-preview-tips">' . $message . '</span>
+		</div>
+		');
 
-		$html .= new OOUI\HorizontalLayout([
-			'content' => [
-				new OOUI\HtmlSnippet(Html::element('div', ['style' => 'margin: auto 0;'], $this->msg('viewavatar-username')->text())),
-				$userNameBtn
-			]
-		]);
+		if ($canDoAdmin) {
+			$this->showDeleteForm($user);
+		}
+	}
 
-		// // Fieldset
-		$fieldset = Html::rawElement('fieldset', [
-			'class' => 'mw-fieldset'
-		], $html);
-		$customWidget = new OOUI\Widget([
-			'content' => [
-				new OOUI\HtmlSnippet($fieldset),
-			]
-		]);
-		// // Wrap with a form
-		$showForm = new OOUI\FormLayout([
-			'action' => $wgScript,
-			'method' => 'get',
-			'items' => [
-				$customWidget,
-			],
-		]);
+	private function showForm($users, $canDoAdmin, $haveAvatar) {
 
-		$this->getOutput()->addHTML($showForm);
+		$this->getOutput()->addHTML('
+		<div class="query-avatar-area" style="display: flex;">
+			<form autocomplete="off" class="query-input-box">
+				<label for="query-input">' . $this -> msg('viewavatar-username') -> text() . '</label>
+				<div style="display: flex;">
+					<input autocomplete="off" id="query-input" type="text" alt="name">
+					<button type="submit" class="search-btn"><span class="search-icon"></span></button>
+				</div>
+				<div class="result-box">
+					<ul id="result"></ul>
+				</div>
+			</form>'.
+			($canDoAdmin ? '<button ' . ($users && $haveAvatar ? '' : 'disabled') . ' class="deletion-avatar-btn btn-bgblue">' . $this -> msg('viewavatar-delete-submit') -> text() . '</button>' : '').
+			'</div>
+		');
 	}
 
 	private function showDeleteForm($user) {
-		global $wgScript;
-
-		// This is essential as we need to submit the form to this page
-		$html = \Html::hidden('title', $this->getPageTitle());
-		$html .= \Html::hidden('delete', 'true');
-		$html .= \Html::hidden('user', $user);
-
-		$html .= Html::element('legend', ['style' => 'font-size: 1rem'], $this->msg('viewavatar-delete-legend')->text());
-
-		$userNameBtn = new OOUI\ActionFieldLayout( new OOUI\TextInputWidget([
-			'name' => 'reason',
-		]),new OOUI\ButtonInputWidget([
-			'label' => $this->msg('viewavatar-delete-submit')->text(),
-			'type' => 'submit',
-		]), [
-			'classes' => [ 'avatar-flex-auto', 'avatar-max-width-50em' ]
-		]);
-
-		$html .= new OOUI\HorizontalLayout([
-			'content' => [
-				new OOUI\HtmlSnippet(Html::element('div', ['style' => 'margin: auto 0;'], $this->msg('viewavatar-delete-reason')->text())),
-				$userNameBtn
-			]
-		]);
-
-		// // Fieldset
-		$fieldset = Html::rawElement('fieldset', [], $html);
-		$customWidget = new OOUI\Widget([
-			'content' => [
-				new OOUI\HtmlSnippet($fieldset),
-			]
-		]);
-		// // Wrap with a form
-		$showDeleteForm = new OOUI\FormLayout([
-			'action' => $wgScript,
-			'method' => 'get',
-			'items' => [
-				$customWidget,
-			],
-		]);
-
-		$this->getOutput()->addHTML($showDeleteForm);
+		$this->getOutput()->addHTML('	
+		<div class="delete-avatar-popup" style="opacity: 0;pointer-events: none;">
+			<form autocomplete="off" class="deletion-input-box">
+				<label for="deletion-input" style="width: 100%;">' . $this -> msg('viewavatar-delete-reason') -> text() . '</label>
+				<div style="display: flex;">
+					<input autocomplete="off" id="deletion-input" type="text" alt="name">
+				</div>
+				<div style="display: flex; gap: .5rem;"> 
+					<button class="search-btn deletion-search-btn shut-down-delete-popup-btn">' . $this -> msg('cancel-avatarupload') -> text() . '</button>
+					<button type="submit" class="search-btn deletion-search-btn btn-bgblue">' . $this -> msg('viewavatar-delete-submit') -> text() . '</button>
+				</div>
+				
+			</form>
+		</div>
+		');
 	}
 }
