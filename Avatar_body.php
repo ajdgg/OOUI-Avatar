@@ -65,14 +65,14 @@ class Avatars {
 		global $wgAvatarUploadDirectory;
 		$dirPath = $wgAvatarUploadDirectory . "/{$user->getId()}/";
 		if (!is_dir($dirPath)) {
-			return false;
+			return [false, 'no_avatar_dir'];
 		}
 		$files = glob($dirPath . '*', GLOB_MARK);
 		foreach ($files as $file) {
 			unlink($file);
 		}
 		rmdir($dirPath);
-		return true;
+		return [true, ''];
 	}
 
 }

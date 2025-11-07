@@ -86,7 +86,24 @@ class SpecialUpload extends \SpecialPage {
 		}
 
 		// 判断进oss存储逻辑
+		$results = $this->fileUpload($img,);
+
+		global $wgAvatarLogInRC;
+
+		$logEntry = new \ManualLogEntry('avatar', 'upload');
+		$logEntry->setPerformer($this->getUser());
+		$logEntry->setTarget($this->getUser()->getUserPage());
+		$logId = $logEntry->insert();
+		$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
+
+		header( 'Content-Type: application/json' );
+		!$results[0] && http_response_code(500);
+		echo json_encode( [ 'msg' => $results[0] ? $this->msg('upload-avatar-success')->text() : $results[1] ] );
+	}
+
+	public function fileUpload($img) {
 		global $wgDefaultAvatarRes;
+		global $wgMaxAvatarResolution;
 		$user = $this->getUser();
 		Avatars::deleteAvatar($user);
 
@@ -103,20 +120,7 @@ class SpecialUpload extends \SpecialPage {
 
 		$img->cleanup();
 
-		// $this->displayMessage($this->msg('avatar-saved'));
-
-
-
-		global $wgAvatarLogInRC;
-
-		$logEntry = new \ManualLogEntry('avatar', 'upload');
-		$logEntry->setPerformer($this->getUser());
-		$logEntry->setTarget($this->getUser()->getUserPage());
-		$logId = $logEntry->insert();
-		$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
-
-		header( 'Content-Type: application/json' );
-        echo json_encode( [ 'msg' => $this->msg('upload-avatar-success')->text() ] );
+		return [true, 'avatar_success'];
 	}
 
 	public function displayForm() {

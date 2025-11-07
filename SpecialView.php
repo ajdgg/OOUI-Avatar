@@ -89,10 +89,14 @@ class SpecialView extends \SpecialPage {
 				exit;
 			}
 
-			if (Avatars::deleteAvatar($userObj)) {
-				$this -> delAvatarlog( $userObj, $opt);
-				echo json_encode([ 'code' => '20000', 'msg' => $this -> msg('delete-avatar-success') -> text()]);
+			$deleteAvatar = Avatars::deleteAvatar($userObj);
+			if (!$deleteAvatar[0]) {
+				echo json_encode([ 'code' => '50003', 'msg' => $deleteAvatar[1]]);
+				exit;
 			}
+
+			$this -> delAvatarlog( $userObj, $opt);
+			echo json_encode([ 'code' => '20000', 'msg' => $this -> msg('delete-avatar-success') -> text()]);
 		}
 
 		$this->getOutput()->addModules(array('mediawiki.userSuggest'));
