@@ -99,7 +99,7 @@ class SpecialView extends \SpecialPage {
 		}
 
 		$this->getOutput()->addModules(array('mediawiki.userSuggest'));
-		$this->getOutput()->addModules('ext.avatar.view');
+		$this->getOutput()->addModules('ext.avatar.viewapp');
 
 		if (!$opt->getValue('delete')) {
 			$this -> showInterface($user, $users, $canDoAdmin, $haveAvatar, $userObj, $userExists);
@@ -109,7 +109,9 @@ class SpecialView extends \SpecialPage {
 	private function showInterface($user, $users, $canDoAdmin, $haveAvatar, $userObj, $userExists) {
 		global $wgScriptPath;
 		global $wgDefaultAvatar;
+		global $wgMenuOption;
 		$this->getOutput()->addJsConfigVars('wgDefaultAvatar', $wgDefaultAvatar);
+		$this->getOutput()->addJsConfigVars('wgMenuOption', $wgMenuOption);
 		$this->showForm($users, $canDoAdmin, $haveAvatar);
 
 		$state = 'no_avatar';
@@ -138,50 +140,13 @@ class SpecialView extends \SpecialPage {
 
 		$this->getOutput()-> addHTML('
 		<div>
-			<img id="avatar-preview" alt="avatar" style="display:' . ($user && $userExists && $haveAvatar ? 'block' : 'none') . ';width: 100%;height: 100%;" src="' . ($user && $userExists ? $wgScriptPath . '/extensions/Avatar/avatar.php?user=' . $user .'&amp;res=original&amp;nocache&amp;ver='. strtolower(dechex(floor(time()))) : '') . '" />
+			<img id="avatar-preview" alt="avatar" style="display:' . ($user && $userExists && $haveAvatar ? 'block' : 'none') . ';width: 100%;height: 100%;" src="' . ($user && $userExists && $haveAvatar ? $wgScriptPath . '/extensions/Avatar/avatar.php?user=' . $user .'&amp;res=original&amp;nocache&amp;ver='. strtolower(dechex(floor(time()))) : '') . '" />
 			<span class="avatar-preview-tips">' . $message . '</span>
 		</div>
 		');
-
-		if ($canDoAdmin) {
-			$this->showDeleteForm($user);
-		}
 	}
 
 	private function showForm($users, $canDoAdmin, $haveAvatar) {
-
-		$this->getOutput()->addHTML('
-		<div class="query-avatar-area" style="display: flex;">
-			<form autocomplete="off" class="query-input-box">
-				<label for="query-input">' . $this -> msg('viewavatar-username') -> text() . '</label>
-				<div style="display: flex;">
-					<input autocomplete="off" id="query-input" type="text" alt="name">
-					<button type="submit" class="search-btn"><span class="search-icon"></span></button>
-				</div>
-				<div class="result-box">
-					<ul id="result"></ul>
-				</div>
-			</form>'.
-			($canDoAdmin ? '<button ' . ($users && $haveAvatar ? '' : 'disabled') . ' class="deletion-avatar-btn btn-bgblue">' . $this -> msg('viewavatar-delete-submit') -> text() . '</button>' : '').
-			'</div>
-		');
-	}
-
-	private function showDeleteForm($user) {
-		$this->getOutput()->addHTML('	
-		<div class="delete-avatar-popup" style="opacity: 0;pointer-events: none;">
-			<form autocomplete="off" class="deletion-input-box">
-				<label for="deletion-input" style="width: 100%;">' . $this -> msg('viewavatar-delete-reason') -> text() . '</label>
-				<div style="display: flex;">
-					<input autocomplete="off" id="deletion-input" type="text" alt="name">
-				</div>
-				<div style="display: flex; gap: .5rem;"> 
-					<button class="search-btn deletion-search-btn shut-down-delete-popup-btn">' . $this -> msg('cancel-avatarupload') -> text() . '</button>
-					<button type="submit" class="search-btn deletion-search-btn btn-bgblue">' . $this -> msg('viewavatar-delete-submit') -> text() . '</button>
-				</div>
-				
-			</form>
-		</div>
-		');
+		$this->getOutput()->addHTML('<div id="SpecialViewApp"></div>');
 	}
 }

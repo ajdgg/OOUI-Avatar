@@ -1,30 +1,34 @@
-(() => {
+const init = (Toolset) => {
     'use strict';
     let currentPresentationAvatarUser;
 
-    const input = document.querySelector('#query-input');
     const result = document.querySelector('#result');
     const resultBox = document.querySelector('.result-box');
     const queryInputBox = document.querySelector('.query-input-box');
     const img = document.querySelector('#avatar-preview');
     const avatarPreviewTips = document.querySelector('.avatar-preview-tips');
     const MenuOption = mw.config.get('wgMenuOption');
-    const deletionInputBox = document.querySelector('.deletion-input-box');
-    const shutDownDeletePopupBtn = document.querySelector('.shut-down-delete-popup-btn');
-    const deletionAvatarBtn = document.querySelector('.deletion-avatar-btn');
-    const deleteAvatarPopup = document.querySelector('.delete-avatar-popup');
-    const deletionInput = document.querySelector('#deletion-input');
 
-    if (img.src !== '') {
-        const parsedUrl = new URL(window.location.href);
-        input.value = parsedUrl.searchParams.get("user");
-        currentPresentationAvatarUser = parsedUrl.searchParams.get("user");
+    const hideMenu = () => {
+        MenuOption && (resultBox.style.height = `0px`);
     }
 
-    const avatarLog = require("ext.avatar.log");
-    
-    const avatarLogI = new avatarLog();
-    avatarLogI.init();
+    const disabledBtn = (disabled = true) => {
+        Toolset.changesDeleteBtnDisabled(disabled);
+    }
+
+    const parsedUrl = new URL(window.location.href);
+    Toolset.addQueryInputValue(parsedUrl.searchParams.get("user"));
+    currentPresentationAvatarUser = parsedUrl.searchParams.get("user");
+
+    if (img.getAttribute('src') === '') {
+        if(avatarPreviewTips.textContent === mw.msg('viewavatar-nouser')) {
+            Toolset.setMsgBoxType('error');
+            Toolset.setMsgBoxText(mw.msg('viewavatar-nouser'));
+            Toolset.setMsgBoxShow(true);
+        }
+        disabledBtn(true);
+    }
 
     let isComposing = false;
 
@@ -38,27 +42,6 @@
             }, wait);
         };
     }
-
-    const hideMenu = () => {
-        MenuOption && (resultBox.style.height = `0px`);
-    }
-
-    const disabledBtn = (disabled = true) => {
-        deletionAvatarBtn.disabled !== disabled && (deletionAvatarBtn.disabled = disabled);
-    }
-
-    const showDeletePopup = (show = true) => { 
-        deleteAvatarPopup.style.opacity = show ? '1' : '0';
-        deleteAvatarPopup.style.pointerEvents = show ? 'all' : 'none';
-        !show && deletionInput.value && (deletionInput.value = '');
-    }
-
-    document.addEventListener('click', function (evt) {
-        if (!resultBox.contains(evt.target) && !input.contains(evt.target)) {
-            hideMenu();
-        }
-    });
-
 
     // 跟新菜单列表
     const funResult = (list) => {
@@ -109,12 +92,15 @@
 
     // 查询头像
     const q = async (name) => {
+        Toolset.setMsgBoxShow(false);
         currentPresentationAvatarUser = '';
         const header = await fetch(`?q=${name}`)
         const json = await header.json();
         img.style.display = 'block';
         if (json.code !== '20000') {
-            avatarLogI.show(json.msg, 'error', 5000);
+            Toolset.setMsgBoxType('error');
+            Toolset.setMsgBoxText(json.msg);
+            Toolset.setMsgBoxShow(true);
             img.src = '';
             img.style.display = 'none';
             avatarPreviewTips.textContent = mw.msg('viewavatar-nouser');
@@ -130,7 +116,6 @@
         }
         img.style.display = 'block';
         img.src = mw.config.get('wgScriptPath') + '/extensions/Avatar/avatar.php?user=' + name + '&res=original&nocache&ver=' + Math.floor(Date.now()/1000).toString(16);
-        avatarLogI.show(json.msg, 'success');
         avatarPreviewTips.textContent = mw.msg('viewavatar-avatar-preview-tips', name);
         disabledBtn(false);
         currentPresentationAvatarUser = name;
@@ -139,59 +124,23 @@
     // 查询
     queryInputBox.addEventListener('submit', (e) => { 
         e.preventDefault();
-        q(input.value);
+        q(Toolset.getQueryInputValue());
         hideMenu();
     });
 
-    // 显示删除头像弹窗
-    if (deletionAvatarBtn) {
-        deletionAvatarBtn.addEventListener('click', () => { 
-            showDeletePopup();
-        });
-    }
-
-    // 关闭删除头像弹窗
-    if (shutDownDeletePopupBtn) {
-        shutDownDeletePopupBtn.addEventListener('click', (e) => { 
-            e.preventDefault();
-            showDeletePopup(false);
-        });
-    }
-
-    // 删除<form>
-    if (deletionInputBox) {
-        deletionInputBox.addEventListener('submit', (e) => { 
-            e.preventDefault();
-            const url = window.location.pathname + `?user=${currentPresentationAvatarUser}&delete=${currentPresentationAvatarUser}&reason=${deletionInput.value}`;
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            }).then(async (res) => {
-                const data = await res.json();
-
-                if (data.code !== '20000') {
-                    throw new Error(data.msg);
-                }
-                return data;
-            }).then((res) => {
-                avatarLogI.show(res.msg, 'success');
-                img.src = '';
-                img.style.display = 'none';
-                avatarPreviewTips.textContent = mw.msg('viewavatar-noavatar');
-                disabledBtn();
-                showDeletePopup(false);
-
-            }).catch((err) => {
-                avatarLogI.show(err.message, 'error');
-                showDeletePopup(false);
-            })
-        });
-    }
-
-    // 菜单列表功能事件注册
+    // // 菜单列表功能事件注册
     const Menu = () => {
+        console.log('Menu')
+        const input = document.querySelector('.avatar-nameinput input.cdx-text-input__input')
+        if (!input || !resultBox || !result) {
+            return console.error('Menu elements not found');
+        };
+        document.addEventListener('click', function (evt) {
+            if (!resultBox.contains(evt.target) && !input.contains(evt.target)) {
+                hideMenu();
+            }
+        });
+
         input.addEventListener('compositionstart', () => {
             isComposing = true;
         });
@@ -213,4 +162,35 @@
     // 在启用菜单时，注册事件
     MenuOption && Menu();
 
-})();
+    return function () { 
+        const url = window.location.pathname + `?user=${currentPresentationAvatarUser}&delete=${currentPresentationAvatarUser}&reason=${Toolset.getDeleteInfoInputValue()}`;
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }).then(async (res) => {
+            const data = await res.json();
+            if (data.code !== '20000') {
+                throw new Error(data.msg);
+            }
+            return data;
+        }).then((res) => {
+            Toolset.setMsgBoxType('success');
+            Toolset.setMsgBoxText(res.msg);
+            Toolset.setMsgBoxShow(true);
+            img.src = '';
+            img.style.display = 'none';
+            avatarPreviewTips.textContent = mw.msg('viewavatar-noavatar');
+            disabledBtn();
+            Toolset.controlDialogShow(false);
+        }).catch((err) => {
+            Toolset.setMsgBoxType('error');
+            Toolset.setMsgBoxText(err.message);
+            Toolset.setMsgBoxShow(true);
+            Toolset.controlDialogShow(false);
+        })
+    };
+};
+
+module.exports = init;

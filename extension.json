@@ -6,7 +6,7 @@
 	],
 	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
 	"descriptionmsg": "avatar_desc",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"license-name": "BSD-2-Clause",
 	"type": "specialpage",
 	"ExtensionMessagesFiles": {
@@ -30,8 +30,7 @@
 	"ResourceModules": {
 		"ext.avatar.upload": {
 			"dependencies": [
-				"ext.avatar.canvas",
-				"ext.avatar.log"
+				"ext.avatar.canvas"
 			],
 			"scripts":[
 				"assets/upload.js"
@@ -46,10 +45,38 @@
 				"uploadavatar-hint"
 			]
 		},
-		"ext.avatar.view": {
-			"dependencies": [
-				"ext.avatar.log"
+		"ext.avatar.uploadapp": {
+			"class": "MediaWiki\\ResourceLoader\\CodexModule",
+			"codexComponents": [
+				"CdxButton",
+				"CdxIcon",
+				"CdxMessage"
 			],
+			"packageFiles":[
+				"assets/SpecialUploadInit.js",
+				"components/SpecialUpload.vue",
+				{
+					"name": "components/icons.json",
+					"callback": "MediaWiki\\ResourceLoader\\CodexModule::getIcons",
+					"callbackParam": [
+						"cdxIconUpload"
+					]
+				}
+			],
+			"messages": [
+				"uploadavatar-notice",
+				"uploadavatar-nofile",
+				"action-avatarupload",
+				"preview-avatar",
+				"reselect-the-avatar",
+				"cancel-avatarupload"
+			],
+			"dependencies": [
+				"vue",
+				"ext.avatar.upload"
+			]
+		},
+		"ext.avatar.view": {
 			"scripts": [
 				"assets/view.js"
 			],
@@ -61,7 +88,33 @@
 				"viewavatar-noavatar",
 				"viewavatar-avatar-preview-tips"
 			]
-				
+		},
+		"ext.avatar.viewapp": {
+			"class": "MediaWiki\\ResourceLoader\\CodexModule",
+			"codexComponents": [
+				"CdxButton",
+				"CdxSearchInput",
+				"CdxMessage",
+				"CdxDialog",
+				"CdxTextInput",
+				"CdxField"
+			],
+			"packageFiles":[
+				"assets/SpecialViewInit.js",
+				"components/SpecialView.vue"
+			],
+			"dependencies": [
+				"vue",
+				"ext.avatar.view"
+			],
+			"messages": [
+				"viewavatar-username",
+				"viewavatar-delete-submit",
+				"viewavatar-delete-legend",
+				"viewavatar-delete-reason",
+				"cancel-avatarupload",
+				"viewavatar-delete-submit"
+			]
 		},
 		"ext.avatar.UserLinkAvatar": {
 			"scripts": [
@@ -88,14 +141,13 @@
 			],
 			"scripts": [
 				"example/Gadget-UserPageTitleAvatar.js"
+			],
+			"styles": [
+				"example/Gadget-UserPageTitleAvatar.css"
 			]
 		},
 		"ext.avatar.canvas": {
             "scripts": ["assets/canvas.js"]
-        },
-		"ext.avatar.log": {
-            "scripts": ["assets/log.js"],
-			"styles": ["assets/log.css"]
         }
 	},
 	"AutoloadClasses": {
