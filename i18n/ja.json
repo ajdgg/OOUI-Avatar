@@ -43,5 +43,8 @@
     "sidebar-viewavatar": "アバターを表示",
 
     "upload-avatar-success": "アバターのアップロードが成功しました",
-    "delete-avatar-success": "アバターの削除が成功しました"
+    "delete-avatar-success": "アバターの削除が成功しました",
+
+    "oss-bucket-not-configured": "OSSバケットが設定されていません。",
+	"oss-Invalid-init-param": "未設定の初期化パラメータ："
 }

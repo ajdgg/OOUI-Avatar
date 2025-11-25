@@ -43,5 +43,8 @@
 	"sidebar-viewavatar": "查看头像",
 
 	"upload-avatar-success": "头像上传成功",
-	"delete-avatar-success": "头像删除成功"
+	"delete-avatar-success": "头像删除成功",
+
+	"oss-bucket-not-configured": "未配置OSS存储桶。",
+	"oss-Invalid-init-param": "有未配置的初始化参数："
 }

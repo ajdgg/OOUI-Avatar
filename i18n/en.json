@@ -43,5 +43,8 @@
     "sidebar-viewavatar": "View Avatar",
 
     "upload-avatar-success": "Avatar uploaded successfully",
-    "delete-avatar-success": "Avatar deleted successfully"
+    "delete-avatar-success": "Avatar deleted successfully",
+
+	"oss-bucket-not-configured": "OSS bucket not configured.",
+	"oss-Invalid-init-param": "Unconfigured initialization parameters: "
 }
