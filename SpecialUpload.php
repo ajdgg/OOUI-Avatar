@@ -27,7 +27,7 @@ class SpecialUpload extends \SpecialPage {
 
 		global $wgMaxAvatarResolution;
 		$this->getOutput()->addJsConfigVars('wgMaxAvatarResolution', $wgMaxAvatarResolution);
-		$this->getOutput()->addModules('ext.avatar.upload');
+		$this->getOutput()->addModules('ext.avatar.uploadapp');
 
 		if ($request->wasPosted()) {
 			$this->processUpload();
@@ -85,8 +85,7 @@ class SpecialUpload extends \SpecialPage {
 			exit;
 		}
 
-		// 判断进oss存储逻辑
-		$results = $this->fileUpload($img,);
+		$results = $this->fileUpload($img);
 
 		global $wgAvatarLogInRC;
 
@@ -97,86 +96,36 @@ class SpecialUpload extends \SpecialPage {
 		$logEntry->publish($logId, $wgAvatarLogInRC ? 'rcandudp' : 'udp');
 
 		header( 'Content-Type: application/json' );
-		!$results[0] && http_response_code(500);
+		!$results[0] && http_response_code(505);
 		echo json_encode( [ 'msg' => $results[0] ? $this->msg('upload-avatar-success')->text() : $results[1] ] );
 	}
 
 	public function fileUpload($img) {
-		global $wgDefaultAvatarRes;
+		// 判断进oss存储逻辑
 		global $wgMaxAvatarResolution;
+		global $wgDefaultAvatarRes;
 		$user = $this->getUser();
 		Avatars::deleteAvatar($user);
-
 		// Avatar directories
 		global $wgAvatarUploadDirectory;
 		$uploadDir = $wgAvatarUploadDirectory . '/' . $this->getUser()->getId() . '/';
 		@mkdir($uploadDir, 0755, true);
-
 		// We do this to convert format to png
 		$img->createThumbnail($wgMaxAvatarResolution, $uploadDir . 'original.png');
-
 		// We only create thumbnail with default resolution here. Others are generated on demand
 		$img->createThumbnail($wgDefaultAvatarRes, $uploadDir . $wgDefaultAvatarRes . '.png');
-
 		$img->cleanup();
-
 		return [true, 'avatar_success'];
 	}
 
 	public function displayForm() {
 		global $wgScriptPath;
 
+		$this->getOutput()->addHTML('<div id="msg"></div>');
+
 		$this->getOutput()->addHTML('<div id="tips">' . $this->msg('uploadavatar-notice')->parseAsBlock() . '</div>');
 
-		$this->getOutput()->addHTML('<div id="avatar-presentation-region">
-			<span id="upload-avatar-btn" class="upload-avatar-btn">
-				<span class="upl-svg"></span>
-				<span id="upload-avatar-btn-text">' . $this->msg('action-avatarupload')->text() . '</span>
-			</span>
-			<i style="margin: 0 1rem;"></i>
-			<div id="avatar-presentation">
-				<img class="current-avatar" alt="' . $this->msg('uploadavatar-nofile') -> text() .'" src=" ' . $wgScriptPath . '/extensions/Avatar/avatar.php?user=' . $this->getUser()->getName() .'&amp;res=original&amp;nocache&amp;ver='. strtolower(dechex(floor(time()))) .'">
-				<span>' . $this->msg('uploadavatar-nofile') -> text() . '</span>
-			</div>
-		</div>');
-
-		$this->getOutput()->addHTML('<div id="clipping-area" style="display: none;">
-			<div id="clipping-function-area">
-				<div id="crop">
-					<canvas id="avatar-canvas"></canvas>
-					<div id="cropper" class="cropper" name="cropper" >
-						<div class="up"></div>
-						<div class="down"></div>
-						<div class="left"></div>
-						<div class="right"></div>
-						<div class="tl-resizer"></div>
-						<div class="tr-resizer"></div>
-						<div class="bl-resizer"></div>
-						<div class="br-resizer"></div>
-						<div class="x"></div>
-						<div class="y"></div>
-					</div>
-				</div>
-			</div>
-			<i style="margin: 0 1rem;"></i>
-			<div class="avatar-preview-region">
-				<div id="avatar-preview">
-					<canvas id="avatar-preview-canvas"></canvas>
-					<span>'. $this->msg('preview-avatar') -> text() . '</span>
-				</div>
-				<div class="function-button-area"> 
-					<span id="determine-upload-btn" class="upload-avatar-btn function-area btn-bgblue">
-						<span id="upload-avatar-btn-text">' . $this->msg('action-avatarupload')->text() . '</span>
-					</span>
-					<span id="reselect-the-avatar" class="upload-avatar-btn function-area">
-						<span id="upload-avatar-btn-text">' . $this->msg('reselect-the-avatar')->text() . '</span>
-					</span>
-					<span id="cancel-avatarupload" class="upload-avatar-btn function-area">
-						<span id="upload-avatar-btn-text">' . $this->msg('cancel-avatarupload')->text() . '</span>
-					</span>
-				</div>
-			</div>
-		</div>');
+		$this->getOutput()->addHTML('<div id="SpecialUploadApp"></div>');
 	}
 
 	public function isListed() {

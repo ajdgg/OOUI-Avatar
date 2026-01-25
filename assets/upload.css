@@ -28,6 +28,7 @@
 #clipping-area {
 	display: flex;
 	justify-content: center;
+	margin: 2rem 0;
 }
 
 #crop {
@@ -115,9 +116,11 @@
 	cursor: nesw-resize;
 }
 .br-resizer {
-	right: -3px;
-	bottom: -3px;
-	cursor: nwse-resize;
+    right: -5px;
+    bottom: -5px;
+    cursor: nwse-resize;
+    width: 10px;
+    height: 10px;
 }
 
 .x {
@@ -139,30 +142,17 @@
 	border-left: 1px dashed #eee;
 }
 
-.upl-svg {
-	width: 1rem;
-    margin-right: 5px;
-	background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48IS0tIUZvbnQgQXdlc29tZSBGcmVlIHY2LjcuMiBieSBAZm9udGF3ZXNvbWUgLSBodHRwczovL2ZvbnRhd2Vzb21lLmNvbSBMaWNlbnNlIC0gaHR0cHM6Ly9mb250YXdlc29tZS5jb20vbGljZW5zZS9mcmVlIENvcHlyaWdodCAyMDI1IEZvbnRpY29ucywgSW5jLi0tPjxwYXRoIGQ9Ik0yODggMTA5LjNMMjg4IDM1MmMwIDE3LjctMTQuMyAzMi0zMiAzMnMtMzItMTQuMy0zMi0zMmwwLTI0Mi43LTczLjQgNzMuNGMtMTIuNSAxMi41LTMyLjggMTIuNS00NS4zIDBzLTEyLjUtMzIuOCAwLTQ1LjNsMTI4LTEyOGMxMi41LTEyLjUgMzIuOC0xMi41IDQ1LjMgMGwxMjggMTI4YzEyLjUgMTIuNSAxMi41IDMyLjggMCA0NS4zcy0zMi44IDEyLjUtNDUuMyAwTDI4OCAxMDkuM3pNNjQgMzUybDEyOCAwYzAgMzUuMyAyOC43IDY0IDY0IDY0czY0LTI4LjcgNjQtNjRsMTI4IDBjMzUuMyAwIDY0IDI4LjcgNjQgNjRsMCAzMmMwIDM1LjMtMjguNyA2NC02NCA2NEw2NCA1MTJjLTM1LjMgMC02NC0yOC43LTY0LTY0bDAtMzJjMC0zNS4zIDI4LjctNjQgNjQtNjR6TTQzMiA0NTZhMjQgMjQgMCAxIDAgMC00OCAyNCAyNCAwIDEgMCAwIDQ4eiIvPjwvc3ZnPg==') center center no-repeat;
-}
-
 #avatar-presentation-region {
 	display: flex;
 	align-items: self-end;
 	justify-content: center;
-	margin: 2rem 0;
+	margin:  2rem auto;
 }
 
 #avatar-presentation {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-}
-
-.upload-avatar-btn {
-	display: flex;
-	padding: 5px 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
 }
 
 #avatar-preview {
@@ -186,18 +176,7 @@
 
 .function-button-area {
 	display: flex;
-}
-
-.function-area:nth-child(2) {
-	margin: 0 0.5rem;
-}
-
-.btn-bgblue {
-	background-color: var(--background-color-progressive, #36c);
-	color: #fff;
-}
-.btn-bgblue:hover {
-	background-color: var(--color-progressive--hover, #4b77d6);
+	gap: 0.5rem;
 }
 
 @media (max-width: 480px) {
@@ -215,6 +194,13 @@
 	#clipping-area {
 		flex-direction: column;
 		align-items: center;
+	}
+	#avatar-presentation-region {
+		flex-direction: column-reverse;
+		align-items: center;
+	}
+	#upload-avatar-btn {
+		margin: 1rem 0 0;
 	}
 	#avatar-preview {
 		display: none;
