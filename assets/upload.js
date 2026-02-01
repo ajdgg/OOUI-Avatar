@@ -168,7 +168,7 @@ const init = (Toolset) => {
 
     function tlResizerMove(event) {
         const e = event || window.event;
-        max = Math.max(e.clientX - startX, e.clientY - startY);
+        const max = Math.max(e.clientX - startX, e.clientY - startY);
         if (
             offsetX + max < 0 ||
             offsetY + max < 0 ||
@@ -178,7 +178,7 @@ const init = (Toolset) => {
     }
     function trResizerMove(event) {
         const e = event || window.event;
-        max = Math.min(e.clientX - startX, - (e.clientY - startY));
+        const max = Math.min(e.clientX - startX, - (e.clientY - startY));
         if (
             offsetX + cropperWidth + max > canvasWidth ||
             offsetY - max < 0 ||
@@ -188,7 +188,7 @@ const init = (Toolset) => {
     }
     function blResizerMove(event) {
         const e = event || window.event;
-        max = Math.max(e.clientX - startX, - (e.clientY - startY));
+        const max = Math.max(e.clientX - startX, - (e.clientY - startY));
         if (
             offsetX + max < 0 ||
             offsetY + cropperWidth + max > canvasHeight ||
@@ -198,7 +198,7 @@ const init = (Toolset) => {
     }
     function brResizerMove(event) {
         const e = event || window.event;
-        max = Math.max(e.clientX - startX, e.clientY - startY);
+        const max = Math.max(e.clientX - startX, e.clientY - startY);
         if (
             offsetX + cropperWidth + max > canvasWidth ||
             offsetY + cropperWidth + max > canvasHeight ||
@@ -208,7 +208,7 @@ const init = (Toolset) => {
     }
     function upMove(event) {
         const e = event || window.event;
-        max = e.clientY - startY;
+        const max = e.clientY - startY;
         if (
             offsetX + max / 2 < 0 ||
             offsetY + max < 0 ||
@@ -219,7 +219,7 @@ const init = (Toolset) => {
     }
     function downMove(event) {
         const e = event || window.event;
-        max = e.clientY - startY;
+        const max = e.clientY - startY;
         if (
             offsetX + max / 2 < 0 ||
             offsetY + cropperWidth + max > canvasHeight ||
@@ -230,7 +230,7 @@ const init = (Toolset) => {
     }
     function leftMove(event) {
         const e = event || window.event;
-        max = e.clientX - startX;
+        const max = e.clientX - startX;
         if (
             offsetX + max < 0 ||
             offsetY + max / 2 < 0 ||
@@ -241,7 +241,7 @@ const init = (Toolset) => {
     }
     function rightMove(event) {
         const e = event || window.event;
-        max = e.clientX - startX;
+        const max = e.clientX - startX;
         if (
             offsetY - max / 2 < 0 ||
             offsetX + cropperWidth + max > canvasWidth ||
