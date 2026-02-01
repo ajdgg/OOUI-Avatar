@@ -94,7 +94,8 @@ const init = (Toolset) => {
     const q = async (name) => {
         Toolset.setMsgBoxShow(false);
         currentPresentationAvatarUser = '';
-        const header = await fetch(`?q=${name}`)
+        const split = new URL(window.location.href).search === '' ? '?' : '&';
+        const header = await fetch(`${window.location.href}${split}q=${name}`)
         const json = await header.json();
         img.style.display = 'block';
         if (json.code !== '20000') {
@@ -163,7 +164,9 @@ const init = (Toolset) => {
     MenuOption && Menu();
 
     return function () { 
-        const url = window.location.pathname + `?user=${currentPresentationAvatarUser}&delete=${currentPresentationAvatarUser}&reason=${Toolset.getDeleteInfoInputValue()}`;
+        const split = new URL(window.location.href).search === '' ? '?' : '&'
+        const url = window.location.href + `${split}user=${currentPresentationAvatarUser}&delete=${currentPresentationAvatarUser}&reason=${Toolset.getDeleteInfoInputValue()}`;
+        console.log(url);
         fetch(url, {
             method: 'GET',
             headers: {
