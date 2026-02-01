@@ -6,7 +6,7 @@
 	],
 	"url": "https://github.com/ajdgg/OOJS-MW-Avatar",
 	"descriptionmsg": "avatar_desc",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"license-name": "BSD-2-Clause",
 	"type": "specialpage",
 	"ExtensionMessagesFiles": {
@@ -21,7 +21,8 @@
 		"GetPreferences": "Avatar\\Hooks::onGetPreferences",
 		"BaseTemplateToolbox": "Avatar\\Hooks::onBaseTemplateToolbox",
 		"SidebarBeforeOutput": "Avatar\\Hooks::onSidebarBeforeOutput",
-		"ParserFirstCallInit": "Avatar\\AvatarHooks::onParserFirstCallInit"
+		"ParserFirstCallInit": "Avatar\\AvatarHooks::onParserFirstCallInit",
+		"BeforePageDisplay": "Avatar\\Hooks::onBeforePageDisplay"
 	},
 	"ExtensionFunctions": [
 		"Avatar\\Hooks::onSetup"
@@ -29,7 +30,6 @@
 	"ResourceModules": {
 		"ext.avatar.upload": {
 			"dependencies": [
-				"oojs-ui-core",
 				"ext.avatar.canvas"
 			],
 			"scripts":[
@@ -45,12 +45,105 @@
 				"uploadavatar-hint"
 			]
 		},
-		"ext.avatar.view": {
+		"ext.avatar.uploadapp": {
+			"class": "MediaWiki\\ResourceLoader\\CodexModule",
+			"codexComponents": [
+				"CdxButton",
+				"CdxIcon",
+				"CdxMessage"
+			],
+			"packageFiles":[
+				"assets/SpecialUploadInit.js",
+				"components/SpecialUpload.vue",
+				{
+					"name": "components/icons.json",
+					"callback": "MediaWiki\\ResourceLoader\\CodexModule::getIcons",
+					"callbackParam": [
+						"cdxIconUpload"
+					]
+				}
+			],
+			"messages": [
+				"uploadavatar-notice",
+				"uploadavatar-nofile",
+				"action-avatarupload",
+				"preview-avatar",
+				"reselect-the-avatar",
+				"cancel-avatarupload"
+			],
 			"dependencies": [
-				"oojs-ui-core"
+				"vue",
+				"ext.avatar.upload"
+			]
+		},
+		"ext.avatar.view": {
+			"scripts": [
+				"assets/view.js"
 			],
 			"styles": [
 				"assets/view.css"
+			],
+			"messages": [
+				"viewavatar-nouser",
+				"viewavatar-noavatar",
+				"viewavatar-avatar-preview-tips"
+			]
+		},
+		"ext.avatar.viewapp": {
+			"class": "MediaWiki\\ResourceLoader\\CodexModule",
+			"codexComponents": [
+				"CdxButton",
+				"CdxSearchInput",
+				"CdxMessage",
+				"CdxDialog",
+				"CdxTextInput",
+				"CdxField"
+			],
+			"packageFiles":[
+				"assets/SpecialViewInit.js",
+				"components/SpecialView.vue"
+			],
+			"dependencies": [
+				"vue",
+				"ext.avatar.view"
+			],
+			"messages": [
+				"viewavatar-username",
+				"viewavatar-delete-submit",
+				"viewavatar-delete-legend",
+				"viewavatar-delete-reason",
+				"cancel-avatarupload",
+				"viewavatar-delete-submit"
+			]
+		},
+		"ext.avatar.UserLinkAvatar": {
+			"scripts": [
+				"example/Gadget-UserLinkAvatar.js"
+			],
+			"styles": [
+				"example/Gadget-UserLinkAvatar.css"
+			]
+		},
+		"ext.avatar.ShowAvatar": {
+			"dependencies": [
+				"mediawiki.user"
+			],
+			"scripts": [
+				"example/Gadget-ShowAvatar.js"
+			],
+			"styles": [
+				"example/Gadget-ShowAvatar.css"
+			]
+		},
+		"ext.avatar.UserPageTitleAvatar": {
+			"dependencies": [
+				"mediawiki.user"
+			],
+			"scripts": [
+				"example/Gadget-UserPageTitleAvatar.js"
+			],
+			"styles": [
+				"example/Gadget-UserPageTitleAvatar.css"
 			]
 		},
 		"ext.avatar.canvas": {
@@ -108,7 +201,11 @@
 		"AvatarEnableS3": false,
 		"AvatarS3Config": [],
 		"AvatarS3Path": "",
-		"AvatarS3URL": ""
+		"AvatarS3URL": "",
+		"MenuOption": false,
+		"UserLinkAvatar": false,
+		"ShowAvatar": false,
+		"UserPageTitleAvatar": false
 	},
 	"manifest_version": 1
 }

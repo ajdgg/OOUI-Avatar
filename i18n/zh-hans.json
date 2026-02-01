@@ -11,13 +11,16 @@
 	"avatar-toolarge": "上传的图像太大了",
 	"avatar-saved": "你的头像已保存",
 	"uploadavatar-notice": "'''注意：'''在保存之后，您可能需要清除浏览器缓存才能看到所作出的变更的影响。\n* '''Firefox/Safari：'''按住“Shift”的同时单击“刷新”，或按“Ctrl-F5”或“Ctrl-R”（Mac为“⌘-R”）\n* '''Google Chrome：'''按“Ctrl-Shift-R”（Mac为“⌘-Shift-R”）\n* '''Internet Explorer：'''按住“Ctrl”的同时单击“刷新”，或按“Ctrl-F5”\n* '''Opera：'''在“工具→首选项”中清除缓存\n",
-	"uploadavatar-nofile": "这是你当前的头像。要更换你的头像，请点击下方的“上传头像”按钮。",
+	"uploadavatar-nofile": "当前头像",
 	"uploadavatar-hint": "你可以调整裁剪器的大小或移动它以裁剪你的头像。",
 
 	"right-avataradmin": "删除头像",
 	"action-avataradmin": "删除头像",
 	"right-avatarupload": "上传您的头像",
 	"action-avatarupload": "上传头像",
+	"cancel-avatarupload": "取消",
+	"preview-avatar": "预览头像",
+	"reselect-the-avatar": "重选",
 
 	"log-name-avatar": "头像日志",
 	"log-description-avatar": "这个页面显示了头像的上传和管理活动。",
@@ -31,11 +34,16 @@
 	"viewavatar-submit": "查看",
 	"viewavatar-delete-legend": "删除头像",
 	"viewavatar-delete-reason": "理由：",
-	"viewavatar-delete-submit": "删除",
-	"viewavatar-noavatar": "* 该用户没有头像。",
-	"viewavatar-nouser": "* 该用户不存在。",
+	"viewavatar-delete-submit": "删除此头像",
+	"viewavatar-noavatar": "该用户没有头像。",
+	"viewavatar-nouser": "该用户不存在。",
+	"viewavatar-avatar-preview-tips": "$1的头像",
+	"viewavatar-insufficient-permissions": "权限不足。",
 
 	"sidebar-viewavatar": "查看头像",
+
+	"upload-avatar-success": "头像上传成功",
+	"delete-avatar-success": "头像删除成功",
 
 	"oss-bucket-not-configured": "未配置OSS存储桶。",
 	"oss-Invalid-init-param": "有未配置的初始化参数："

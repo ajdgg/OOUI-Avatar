@@ -13,22 +13,40 @@
 }
 
 .current-avatar {
-	max-height: 256px;
+	max-height: 128px;
+	border-radius: 5px;
 }
 
 #avatar-canvas {
 	display: none;
 	width: 100%;
-	max-width: 500px;
+	max-width: 200px;
+	max-height: 200px;
 	background-color: aliceblue;
+}
+
+#clipping-area {
+	display: flex;
+	justify-content: center;
+	margin: 2rem 0;
 }
 
 #crop {
 	position: relative;
 	overflow: hidden;
 	width: fit-content;
-	margin: 1rem 0;
 	touch-action: none;
+}
+
+#clipping-function-area {
+	width: 200px;
+    height: 200px;
+    display: flex;
+    justify-content: center;
+	align-items: center;
+    flex-direction: column;
+    background: #ccc;
+	border-radius: 5px;
 }
 
 .cropper {
@@ -98,9 +116,11 @@
 	cursor: nesw-resize;
 }
 .br-resizer {
-	right: -3px;
-	bottom: -3px;
-	cursor: nwse-resize;
+    right: -5px;
+    bottom: -5px;
+    cursor: nwse-resize;
+    width: 10px;
+    height: 10px;
 }
 
 .x {
@@ -120,4 +140,72 @@
 	transform: translateX(-50%);
 	border-right: 1px dashed #eee;
 	border-left: 1px dashed #eee;
+}
+
+#avatar-presentation-region {
+	display: flex;
+	align-items: self-end;
+	justify-content: center;
+	margin:  2rem auto;
+}
+
+#avatar-presentation {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#avatar-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+#avatar-preview-canvas {
+	width: 124px;
+	height: 124px;
+	border-radius: 1rem;
+}
+
+.avatar-preview-region {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.function-button-area {
+	display: flex;
+	gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+	#clipping-function-area {
+		width: 100%;
+		max-width: 300px;
+		height: auto;
+	}
+	#avatar-canvas {
+		width: 100%;
+		height: auto;
+		max-width: initial;
+    	max-height: initial;
+	}
+	#clipping-area {
+		flex-direction: column;
+		align-items: center;
+	}
+	#avatar-presentation-region {
+		flex-direction: column-reverse;
+		align-items: center;
+	}
+	#upload-avatar-btn {
+		margin: 1rem 0 0;
+	}
+	#avatar-preview {
+		display: none;
+	}
+	.avatar-preview-region {
+		margin: 1rem 0;
+	}
 }

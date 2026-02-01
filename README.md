@@ -13,7 +13,7 @@ The configuration is fully compatible with Avatar
 
 **Note.** There are API changes when upgrading 0.9.2 to 1.0.0. The change is very likely to break your site. See section below for details. -->
 
-## Install
+## 安装
 * main Branches
     * 在根目录`composer.local.json`添加:
 
@@ -31,29 +31,33 @@ The configuration is fully compatible with Avatar
     * 安装依赖
 * NotOSS Branches
     * 无需依赖安装
+* 安装 php-gd，这是此扩展的依赖项
+* 克隆仓库，将其重命名为 Avatar 并复制到扩展文件夹
+* 在 LocalSettings.php 中添加 `wfLoadExtension('Avatar');`
+* 完成！
 
-* Install php-gd, which is a dependency of this extension
-* Clone the respository, rename it to Avatar and copy to extensions folder
-* Add `wfLoadExtension('Avatar')`; to your LocalSettings.php
-* You are done!
+## 配置
+* `$wgDefaultAvatar` (字符串)，应设置为默认头像的 URL。
+* `$wgAllowedAvatarRes` (数组)，默认值是 array(64, 128)。当请求的大小在这个列表中时，会生成缩略图。
+* `$wgMaxAvatarResolution` (整数)，默认值是 256。这限制了可上传图像的最大分辨率。
+* `$wgDefaultAvatarRes` (整数)，默认值是 128。如果未指定分辨率，则使用此选项作为回退。
+* `$wgVersionAvatar` (布尔值)，默认为 false。当设置为 true 时，每次重定向都会在查询中产生一个 `ver` 参数。
+* `$wgAvatarServingMethod` (字符串)，默认为 redirect。这指示在找到用户头像时使用的提供方法
+	* `redirect`：默认方法，创建一个 302 重定向到用户的真正头像。
+	* `readfile`：使用 php 的 readfile 直接提供文件。
+	* `accel`   ：使用 nginx 的 X-Accel-Redirect 直接提供文件。
+	* `sendfile`：使用 X-SendFile 头直接提供文件。需要 lighttpd 或带有 mod_xsendfile 的 apache。
+* `$wgAvatarLogInRC` (布尔值)，默认为 true。当设置为 true 时，头像日志将显示在最近更改中，因此更容易发现不良头像并采取行动。将其设置为 false 可以防止头像更改影响确定活跃用户。
+* `$wgAvatarUploadPath` (字符串)，默认为 "$wgUploadPath/avatars"。这是头像的（Web）路径。
+* `$wgAvatarUploadDirectory` (字符串)，默认为 "$wgUploadDirectory/avatars"。这是头像的存储路径。\
+* `MenuOption` (布尔值) 是否启用在查看头像界面input的查询菜单
+* `UserLinkAvatar` (布尔值) 是否启用在用户链接前加入头像
+* `ShowAvatar` (布尔值) 是否在导航栏显示头像
+* `UserPageTitleAvatar` (布尔值) 是否在用户页和用户讨论页面标题前加入头像
+* 您可以设置用户权限：
+	* `avatarupload`：用户需要此权限才能上传自己的头像。
+	* `avataradmin`：用户需要此权限才能删除其他人的头像。
 
-## Configuration
-* `$wgDefaultAvatar` (string), should be set to the URL of the default avatar.
-* `$wgAllowedAvatarRes` (array), default value is array(64, 128). Thumbnails will be created upon request when their size is in this list.
-* `$wgMaxAvatarResolution` (integer), default value is 256. This limits maximum resolution of image to be uploaded.
-* `$wgDefaultAvatarRes` (integer), default value is 128. This is the fallback option if resolution is not specified.
-* `$wgVersionAvatar` (boolean), default to false. When set to true, each redirect will produce a `ver` parameter in query.
-* `$wgAvatarServingMethod` (string), default to redirect. This indicates the serving method to use when user's avatar is found
-	* `redirect`: Default method, create a 302 redirect to user's true avatar.
-	* `readfile`: Use php's readfile to serve the file directly.
-	* `accel`   : Use nginx's X-Accel-Redirect to serve the file directly.
-	* `sendfile`: Use X-SendFile header to serve the file. Need lighttpd or apache with mod_xsendfile.
-* `$wgAvatarLogInRC` (boolean), default to true. When set to true, avatar logs are shown in the recent changes, so it is easier to spot bad avatars and take actions. Set to false can prevent avatar changes from affecting determining active users.
-* `$wgAvatarUploadPath` (string), default to "$wgUploadPath/avatars". This is the (web) path to avatars.
-* `$wgAvatarUploadDirectory` (string), default to "$wgUploadDirectory/avatars". This is the storing path of avatars.
-* You can set user rights: 
-	* `avatarupload`: User need this right to upload ones' own avatar.
-	* `avataradmin`: User need this right to delete others' avatars.
 ## OSS
 ```php
 将$wgAvatarEnableS3 设置为true来启用OSS支持。
@@ -72,25 +76,16 @@ $wgAvatarS3Config = [
 	]
 ];
 ```
-## How to use
-* Set avatar in user preference, and then `$wgScriptPath/extensions/Avatar/avatar.php?user=username` will be redirected to your avatar.
-* You can set alias for this php to make it shorter.
- 
-## Detailed API
-* Uploading Avatar: No API provided yet, but one can post to `Special:UploadAvatar` (or its localized equivalent). The only form data required is `avatar`, which should be set to the data uri of the image.
-* Displaying Avatar: This extension provides an entry point for MediaWiki `avatar.php`. This entry point produces result via a 302 redirect. This approach is used to maximize performance while still utilizing MediaWiki core. There are currently 4 available arguments.
-    * `user` set to the user of who you want to enquery the avatar
-    * `res` the preferred resolution of the avatar. Note that this is only a hint and the actual result might not be of the resolution. This parameter is valid only if `user` is set.
-    * `ver` a version number which will be appended to the location field of redirection. Can be used to circumvent browser/CDN cache.
-    * `nocache` if this parameter is set, then no `cache-control` header will be emitted.
 
-## Extra resources
-* If you are using Gadgets
-    * If you want to display the avatar on the top-right navigation bar, you may find Gadget-ShowAvatar in example folder useful.
-    * If you want to display avatars before user link, you may find Gadget-UserLinkAvatar in example folder useful.
+## 如何使用
+* 在用户偏好设置中设置头像，然后 `$wgScriptPath/extensions/Avatar/avatar.php?user=username` 将被重定向到您的头像。
+* 您可以为这个 php 设置别名以使其更短。
 
-## Upgrading from <1.0.0 to 1.0.0
-* `wgScriptPath/extensions/Avatar/avatar.php?username` was changed to `wgScriptPath/extensions/Avatar/avatar.php?user=username`
-* `wgScriptPath/extensions/Avatar/avatar.php?username/resolution` was changed to `wgScriptPath/extensions/Avatar/avatar.php?user=username&res=resolution`
-* The change affects all Gadgets and depending extensions.
-* Upgrading is easy: changing all occurrence of above url to the new fashion.
+## 详细 API
+* 上传头像：尚未提供 API，但可以发布到 `Special:UploadAvatar`（或其本地化等效项）。唯一需要的表单数据是 `avatar`，应将其设置为图像的数据 URI。
+* 显示头像：此扩展提供了 MediaWiki 的 `avatar.php` 入口点。此入口点通过 302 重定向生成结果。这种方法用于在利用 MediaWiki 核心的同时最大化性能。目前有 4 个可用参数。
+    * `user` 设置为要查询头像的用户
+    * `res` 所需头像的首选分辨率。请注意，这只是提示，实际结果可能不是该分辨率。仅在设置了 `user` 时此参数才有效。
+    * `ver` 附加到重定向位置字段的版本号。可用于绕过浏览器/CDN 缓存。
+    * `nocache` 如果设置了此参数，则不会发出 `cache-control` 头。
+

@@ -1,11 +1,85 @@
-/* 
-为view页面布局补充样式
-by awajie
-*/
-.avatar-flex-auto {
-	flex: auto;
+.query-avatar-area {
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1rem;
 }
 
-.avatar-max-width-50em {
-	max-width: 50em;
+.result-box {
+    position: absolute;
+    top: calc(100% + 1rem);
+    left: 0;
+    transition: height .5s ease-in-out;
+    overflow: hidden;
+    background-color: var(--background-color-base, #fff);
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+    height: 0;
+    max-width: 40rem;
+    width: 100%;
+}
+
+#result {
+    list-style: none;
+    padding: 1rem;
+    margin: 0;
+}
+
+#result li {
+    padding: 0.25rem 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-radius: .5rem;
+}
+
+#result li:hover {
+    background-color: var(--background-color-neutral-subtle, #f8f9fa);
+}
+
+.query-input-box {
+    display: flex;
+    flex: auto;
+    width: 100%;
+    align-items: stretch;
+    max-width: 40rem;
+    position: relative;
+    flex-direction: column;
+}
+
+/* 强制覆盖codex input组件样式 */
+.query-input-box input,
+.query-input-box div > div {
+    min-width: 0 !important;
+    width: 100% !important;
+}
+
+#avatar-preview {
+    max-width: 300px;
+    max-height: 300px;
+    border-radius: 1rem;
+    margin: 1rem auto .5rem;
+}
+
+.avatar-preview-tips {
+    display: block;
+    text-align: center;
+}
+
+.dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.avatar-del-label div.cdx-text-input.cdx-text-input--status-default {
+    min-width: 0;
+}
+
+@media (max-width: 480px) {
+    .query-avatar-area {
+        flex-direction: column;
+    }
+    .deletion-avatar-btn {
+        margin: 0.5rem 0;
+    }
 }

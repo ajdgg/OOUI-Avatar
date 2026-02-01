@@ -2,6 +2,8 @@
 namespace Avatar;
 
 use OOUI;
+use MediaWiki\Output\OutputPage;
+use Mediawiki\Skin\Skin;
 
 class Hooks {
 
@@ -10,6 +12,7 @@ class Hooks {
 			'label' => wfMessage('uploadavatar')->text(),
 			'href' => \SpecialPage::getTitleFor("UploadAvatar")->getLinkURL(),
 		]);
+
 
 		global $wgAvatarEnableS3;
 		global $wgDefaultAvatar;
@@ -33,7 +36,7 @@ class Hooks {
 			'type' => 'info',
 			'raw' => true,
 			'label-message' => 'prefs-editavatar',
-			'default' => '<img src="' . $imgLink . '" width="32" style="vertical-align: middle; margin-right: 8px;"></img> ' . $link,
+			'default' => '<img src="' . $imgLink . '" width="32" style="vertical-align: middle; margin-right: 8px;border-radius: 5px;" /> ' . $link,
 			'section' => 'personal/info',
 		);
 
@@ -72,6 +75,22 @@ class Hooks {
 		if ($wgAvatarUploadDirectory === false) {
 			global $wgUploadDirectory;
 			$wgAvatarUploadDirectory = $wgUploadDirectory . '/avatars';
+		}
+	}
+
+		
+	public static function onBeforePageDisplay( OutputPage $out ) { 
+		global $wgUserLinkAvatar;
+		global $wgShowAvatar;
+		global $wgUserPageTitleAvatar;
+		if ( $wgUserLinkAvatar ) {
+			$out->addModules( [ 'ext.avatar.UserLinkAvatar' ] );
+		}
+		if ( $wgShowAvatar ) {
+			$out->addModules( [ 'ext.avatar.ShowAvatar' ] );
+		}
+		if ( $wgUserPageTitleAvatar && ($out -> getTitle() -> getNamespace() === 2 || $out -> getTitle() -> getNamespace() === 3)) {
+			$out->addModules( [ 'ext.avatar.UserPageTitleAvatar' ] );
 		}
 	}
 }
