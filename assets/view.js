@@ -166,7 +166,6 @@ const init = (Toolset) => {
     return function () { 
         const split = new URL(window.location.href).search === '' ? '?' : '&'
         const url = window.location.href + `${split}user=${currentPresentationAvatarUser}&delete=${currentPresentationAvatarUser}&reason=${Toolset.getDeleteInfoInputValue()}`;
-        console.log(url);
         fetch(url, {
             method: 'GET',
             headers: {
