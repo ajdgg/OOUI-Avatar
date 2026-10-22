@@ -46,5 +46,8 @@
     "delete-avatar-success": "アバターの削除が成功しました",
 
     "oss-bucket-not-configured": "OSSバケットが設定されていません。",
-	"oss-Invalid-init-param": "未設定の初期化パラメータ："
+	"oss-Invalid-init-param": "未設定の初期化パラメータ：",
+
+	"external-profile-picture": "外部のプロフィール画像",
+	"external-avatar-warning": "あなたや管理者が外部アバターを設定している場合、アバターを変更するには外部アバターの変更方法を使ってください。ただし、これはローカルアバターの変更には影響しません。"
 }

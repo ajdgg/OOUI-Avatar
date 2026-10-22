@@ -69,7 +69,8 @@
 				"action-avatarupload",
 				"preview-avatar",
 				"reselect-the-avatar",
-				"cancel-avatarupload"
+				"cancel-avatarupload",
+				"external-avatar-warning"
 			],
 			"dependencies": [
 				"vue",
@@ -205,7 +206,10 @@
 		"MenuOption": false,
 		"UserLinkAvatar": false,
 		"ShowAvatar": false,
-		"UserPageTitleAvatar": false
+		"UserPageTitleAvatar": false,
+		"EnableExternalAvatar": false,
+		"ExternalProfilePicture": false,
+		"ExternalProfilePictureFun": null
 	},
 	"manifest_version": 1
 }

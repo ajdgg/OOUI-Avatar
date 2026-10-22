@@ -54,5 +54,8 @@
     "delete-avatar-success": "頭像刪除成功",
 
     "oss-bucket-not-configured": "未設定OSS儲存桶。",
-	"oss-Invalid-init-param": "未設定的初始化參數："
+	"oss-Invalid-init-param": "未設定的初始化參數：",
+
+    "external-profile-picture": "外部頭像",
+	"external-avatar-warning": "您或者管理員配置使用了外部頭像，更換頭像請使用外部頭像所屬的更換方式，但這不影響您更改本地頭像。"
 }

@@ -37,11 +37,27 @@ class Avatars {
 		return 'original';
 	}
 
-	public static function getAvatar(\User $user, $res) {
-		global $wgAvatarEnableS3;
+	public static function getAvatar(\User $user, $res, $expanded_avatar=false) {
 		$path = null;
 
+		global $wgEnableExternalAvatar,
+		$wgExternalProfilePictureFun;
+
+		$UserAvatarPreferences = \MediaWiki\MediaWikiServices::getInstance()->getUserOptionsLookup()->getOption(
+			$user,
+			'external-profile-picture'
+		);
+
+		if ($wgEnableExternalAvatar && $UserAvatarPreferences && !$expanded_avatar) {
+		    if(is_callable($wgExternalProfilePictureFun)) {
+				if ($a = \call_user_func($wgExternalProfilePictureFun, $user)) {
+					return $a;
+				}
+			}
+		}
+
 		// If user exists
+		global $wgAvatarEnableS3;
 		if ($user && $user->getId()) {
 			global $wgAvatarUploadDirectory;
 			$avatarPath = "/{$user->getId()}/$res.png";

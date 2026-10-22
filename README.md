@@ -58,6 +58,23 @@ The configuration is fully compatible with Avatar
 	* `avatarupload`：用户需要此权限才能上传自己的头像。
 	* `avataradmin`：用户需要此权限才能删除其他人的头像。
 
+## 使用外部拓展提供头像url
+```php
+$wgEnableExternalAvatar (字符串)，默认为 false，启用外部拓展提供头像url。
+
+可以将$wgDefaultUserOptions['external-profile-picture'] = 1;来设置默认使用外部头像。
+
+$wgExternalProfilePictureFun (函数)，传入回调函数或者使用数组的方式调用，回调函数在被调用时会接收一个用户对象。
+例如：
+$wgExternalProfilePictureFun = function(\User $user){
+    ···
+}
+或者
+$wgExternalProfilePictureFun = ['YourClass', 'YourFunction'];
+
+
+```
+
 ## OSS
 ```php
 将$wgAvatarEnableS3 设置为true来启用OSS支持。

@@ -46,5 +46,8 @@
     "delete-avatar-success": "Avatar deleted successfully",
 
 	"oss-bucket-not-configured": "OSS bucket not configured.",
-	"oss-Invalid-init-param": "Unconfigured initialization parameters: "
+	"oss-Invalid-init-param": "Unconfigured initialization parameters: ",
+
+	"external-profile-picture": "External Avatar",
+	"external-avatar-warning": "You or the admin have set up an external avatar. To change it, use the method for changing that external avatar, but this doesn’t affect your ability to change your local avatar."
 }

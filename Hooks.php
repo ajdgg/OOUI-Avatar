@@ -4,6 +4,7 @@ namespace Avatar;
 use OOUI;
 use MediaWiki\Output\OutputPage;
 use Mediawiki\Skin\Skin;
+use MediaWiki\MediaWikiServices;
 
 class Hooks {
 
@@ -12,7 +13,6 @@ class Hooks {
 			'label' => wfMessage('uploadavatar')->text(),
 			'href' => \SpecialPage::getTitleFor("UploadAvatar")->getLinkURL(),
 		]);
-
 
 		global $wgAvatarEnableS3;
 		global $wgDefaultAvatar;
@@ -36,13 +36,33 @@ class Hooks {
 			'type' => 'info',
 			'raw' => true,
 			'label-message' => 'prefs-editavatar',
-			'default' => '<img src="' . $imgLink . '" width="32" style="vertical-align: middle; margin-right: 8px;border-radius: 5px;" /> ' . $link,
+			'default' => '<img src="' . $imgLink . '" width="32" style="vertical-align: middle; margin-right: 8px;border-radius: 5px;" /> '. $link,
 			'section' => 'personal/info',
 		);
 
+		global $wgEnableExternalAvatar;
+
+		if( $wgEnableExternalAvatar) {
+			global $wgExternalProfilePicture;
+			
+			$ck = MediaWikiServices::getInstance()->getUserOptionsLookup()->getOption(
+				$user,
+				'external-profile-picture',
+				$wgExternalProfilePicture
+			);
+
+			$preferences['external-profile-picture'] = array(
+				'type' => 'toggle',
+				'label-message' => 'external-profile-picture',
+				'default' => $ck,
+				'section' => 'personal/info',
+			);
+		}
+		
+
 		return true;
 	}
-	
+
 	public static function onSidebarBeforeOutput(\Skin $skin, &$sidebar) {
 		$user = $skin->getRelevantUser();
 		

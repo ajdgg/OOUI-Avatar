@@ -27,6 +27,12 @@ class SpecialUpload extends \SpecialPage {
 
 		global $wgMaxAvatarResolution;
 		$this->getOutput()->addJsConfigVars('wgMaxAvatarResolution', $wgMaxAvatarResolution);
+
+		$UserAvatarPreferences = MediaWikiServices::getInstance()->getUserOptionsLookup()->getOption(
+			$this->getUser(),
+			'external-profile-picture'
+		);
+		$this->getOutput()->addJsConfigVars('wgUserAvatarPreferences', $UserAvatarPreferences);
 		$this->getOutput()->addModules('ext.avatar.uploadapp');
 
 		if ($request->wasPosted()) {

@@ -27,9 +27,11 @@ if (isset($query['user'])) {
 		$res = $wgDefaultAvatarRes;
 	}
 
+	$expanded_avatar = isset($query['expanded_avatar']) ? $query['expanded_avatar'] : false;
+
 	$user = User::newFromName($username);
 	if ($user) {
-		$path = \Avatar\Avatars::getAvatar($user, $res);
+		$path = \Avatar\Avatars::getAvatar($user, $res, $expanded_avatar);
 	}
 }
 

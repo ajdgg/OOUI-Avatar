@@ -61,6 +61,7 @@ module.exports = exports = {
 <template>
 	<Teleport to="#msg">
 		<cdx-message :type="msgType" v-if="msgShow">{{ msgText }}</cdx-message>
+		<cdx-message type="warning" v-if="mw.config.get('wgUserAvatarPreferences')">{{ $i18n('external-avatar-warning').text() }}</cdx-message>
 	</Teleport>
     <div id="avatar-presentation-region">
         <cdx-button  id="upload-avatar-btn">
@@ -73,7 +74,7 @@ module.exports = exports = {
 		</cdx-button>
         <i style="margin: 0 1rem;"></i>
         <div id="avatar-presentation">
-            <img class="current-avatar" :alt="$i18n('uploadavatar-nofile').text()" :src=" mw.config.get('wgScriptPath') + '/extensions/Avatar/avatar.php?user=' + mw.user.id() + '&amp;res=original&amp;nocache&amp;ver=' + Math.floor(Date.now() / 1000).toString(16)" />
+            <img class="current-avatar" :alt="$i18n('uploadavatar-nofile').text()" :src=" mw.config.get('wgScriptPath') + '/extensions/Avatar/avatar.php?user=' + mw.user.id() + '&res=original&nocache&expanded_avatar=1&ver=' + Math.floor(Date.now() / 1000).toString(16)" />
             <span>{{ $i18n('uploadavatar-nofile').text() }}</span>
         </div>
     </div>
